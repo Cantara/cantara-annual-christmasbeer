@@ -45,7 +45,7 @@ func main() {
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"*"}
 	r.Use(cors.New(config))
-	base := r.Group("/christmasbeer")
+	base := r.Group("")
 
 	dash := base.Group("/") //Might need to be in subdir dash
 	{
