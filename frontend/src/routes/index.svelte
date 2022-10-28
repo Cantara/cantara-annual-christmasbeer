@@ -6,9 +6,10 @@
   import NewScope from "../forms/NewScope.svelte";
   import NewServer from "../forms/NewServer.svelte";
   import NewDatabase from "../forms/Login.svelte";
-  import NewService from "../forms/NewService.svelte";
+  import NewService from "../forms/Score.svelte";
   import Login from "../forms/Login.svelte";
   import Register from "../forms/Register.svelte";
+  import Score from "../forms/Score.svelte";
 
   function server() {
     fetch('/nerthus/server/'+scope+'/'+server_name, {
@@ -159,6 +160,9 @@ $: body.service.elb_securitygroup_id = loadbalancer.security_group
     <Register />
   </div>
   <div class="new_line"/>
+  <div class="item">
+    <Score />
+  </div>
   <div class="new_line" style="padding-top: 1.5em;"/>
 </div>
 
@@ -234,4 +238,3 @@ $: body.service.elb_securitygroup_id = loadbalancer.security_group
     padding:4px .5em;
   }
 </style>
-

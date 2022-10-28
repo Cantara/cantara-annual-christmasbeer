@@ -11,7 +11,9 @@
   /* https://www.canva.com/colors/color-wheel/ */
   --orange: #FCA611;
   --green: #11FC31;
+  --blue-lighter: #5A78FF;
   --blue: #1167FC;
+  --blue-darker: #1111DD;
   --purple: #FC11DD;
   --primary: var(--blue);
   --secoundary: var(--purple);
@@ -27,6 +29,10 @@
   --gray-darker: #373737;
   --gray-darkest: #232023;
   --background: var(--gray-lighter);
+
+
+  --slider-primary: var(--blue);
+  --slider-secoundary: var(--blue-lighter);
 }
 	main {
 		text-align: center;
