@@ -1,7 +1,5 @@
 github.com/cantara/bragi v0.6.2 h1:IKndubUc6jCmUT1MJ4ZFqA38Ob1C8m4ZkS1BgWHDNHs=
 github.com/cantara/bragi v0.6.2/go.mod h1:xeoHRvGVST0Ei38UbHcyIGdnd18Trufm7rCK8wxbpBw=
-github.com/cantara/nerthus v0.6.1 h1:mMa/giz5FIpW23wLIG05cvpe+pchWBI+WccpOpU2k+Y=
-github.com/cantara/nerthus v0.6.1/go.mod h1:ETdhXa/O+GmRzF78uOy3LRS1upiRVnWy/wPimSyIAhs=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
