@@ -4,14 +4,13 @@
   import Checkbox from "../components/Checkbox.svelte";
 
   function putDatabase() {
-    fetch('/christmasbeer/register', {
-      method: 'POST',
+    fetch('/account/' +  body.username, {
+      method: 'PUT',
       mode: 'cors',
       cache: 'no-cache',
       credentials: 'omit',
       body: JSON.stringify(body),
       headers: {
-        'Authorization': 'Basic ' + btoa(user.name + ":" + user.password),
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
@@ -34,7 +33,7 @@
   let body = {
     username: "",
     password: "",
-    gdpr: false,
+    //gdpr: false,
   }
 
   let valid_username = false;
@@ -47,16 +46,18 @@
     password: "",
   }
 
-$: disabled = !(valid_username && valid_password && body.gdpr)
+$: disabled = !(valid_username && valid_password)// && body.gdpr)
 </script>
 
 <h2>Register</h2>
 <form on:submit|preventDefault={() => {}}>
-  <Input required label="Username" bind:value={body.username} bind:valid={valid_username} min=3/>
-  <Input required label="Password" password bind:value={body.password} bind:valid={valid_password} min=6 max=64/>
+  <Input required label="Username" bind:value={body.username} bind:valid={valid_username} min=3 />
+  <Input required label="Password" password bind:value={body.password} bind:valid={valid_password} min=6 max=64 />
+  <!--
   <div style="display: inline-flex">
     <Checkbox required bind:checked={body.gdpr}/>
     <p>Check to consent to storage of provided values (GDPRish)</p>
   </div>
+  -->
   <Button click={putDatabase} bind:disabled>Submit</Button>
 </form>

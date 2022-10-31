@@ -1,0 +1,21 @@
+package account
+
+import (
+	"github.com/cantara/cantara-annual-christmasbeer/account/session"
+	"github.com/cantara/cantara-annual-christmasbeer/account/types"
+	"github.com/gofrs/uuid"
+)
+
+type StoreService interface {
+	Register(account types.Account) (err error)
+	Link(username string, login types.Login) (err error)
+	GetById(id uuid.UUID) (user types.Account, err error)
+	GetLogin(username string) (login types.Login, err error)
+	GetByUsername(username string) (user types.Account, err error)
+}
+
+type SessionService interface {
+	Create(accountId string) (accessToken session.AccessToken, err error)
+	Renew(token string) (accessToken session.AccessToken, err error)
+	Validate(token string) (accessToken session.AccessToken, accountId string, err error)
+}

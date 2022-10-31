@@ -2,15 +2,14 @@
   import Button from "../components/Button.svelte";
   import Input from "../components/Input.svelte";
 
-  function putDatabase() {
-    fetch('/christmasbeer/login', {
+  function login() {
+    fetch('/account/login', {
       method: 'POST',
       mode: 'cors',
       cache: 'no-cache',
       credentials: 'omit',
       body: JSON.stringify(body),
       headers: {
-        'Authorization': 'Basic ' + btoa(user.name + ":" + user.password),
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
@@ -52,5 +51,5 @@ $: disabled = !(valid_username && valid_password)
 <form on:submit|preventDefault={() => {}}>
   <Input required label="Username" bind:value={body.username} bind:valid={valid_username}/>
   <Input required label="Password" password bind:value={body.password} bind:valid={valid_password}/>
-  <Button click={putDatabase} bind:disabled>Submit</Button>
+  <Button click={login} bind:disabled>Submit</Button>
 </form>

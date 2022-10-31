@@ -1,0 +1,283 @@
+package session
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"time"
+
+	log "github.com/cantara/bragi"
+	"github.com/google/uuid"
+
+	"gitlab.com/pqmsystems/authentication/crypto"
+	"gitlab.com/pqmsystems/authentication/event"
+	"gitlab.com/pqmsystems/authentication/event/eventdata"
+)
+
+const (
+	ExpiresInSeconds = 7200
+	SESSION_CREATED  = "session_created"
+	SESSION_RENEWED  = "session_renewed"
+	// I think I could add a session delete if I generate a uuid with the token and send session_revoked events with it.
+)
+
+type transactionCheck struct {
+	transactionId uint64
+	completeChan  chan struct{}
+}
+
+type sessionService struct {
+	//sessions        map[string]AccessTokenSession
+	sessions        eventdata.EventData[AccessTokenSession, sessionEventMetadata]
+	transactionChan chan transactionCheck
+	//es              event.EventService[encryptedSessionEvent, sessionEventMetadata]
+}
+
+var cryptKey = "2Q82oDggY6CwBs6QHFu3brYjt8JqFILnn68FDN/eTcU="
+
+type sessionEvent struct {
+	AccountId   string      `json:"account_id"`
+	AccessToken AccessToken `json:"token,omitempty"`
+}
+
+type sessionEventMetadata struct {
+	Expires time.Time `json:"expires"`
+}
+
+type encryptedSessionEvent struct {
+	SessionEvent []byte    `json:"session"`
+	Expires      time.Time `json:"expires"`
+}
+
+func Init(stream string, ctx context.Context) (s *sessionService, err error) {
+	es, err := event.Init[encryptedSessionEvent, sessionEventMetadata](stream, ctx)
+	if err != nil {
+		return
+	}
+	s = &sessionService{
+		sessions:        make(map[string]AccessTokenSession),
+		transactionChan: make(chan transactionCheck),
+		es:              es,
+	}
+	createdEventChan, err := s.es.Stream(SESSION_CREATED, func(metadata event.Metadata[sessionEventMetadata]) bool {
+		return metadata.Event.Expires.After(time.Now())
+	}, ctx)
+	if err != nil {
+		return
+	}
+	renewedEventChan, err := s.es.Stream(SESSION_RENEWED, func(metadata event.Metadata[sessionEventMetadata]) bool {
+		return metadata.Event.Expires.After(time.Now())
+	}, ctx)
+	if err != nil {
+		return
+	}
+
+	transactionIdChan := make(chan uint64, 5)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				panic(ctx.Err())
+			case event := <-createdEventChan:
+				var se sessionEvent
+				data, err := crypto.Decrypt(event.Data.SessionEvent, cryptKey)
+				if err != nil {
+					return
+				}
+				err = json.Unmarshal(data, &se)
+				if err != nil {
+					log.Println("C", err)
+					continue
+				}
+				s.sessions[se.AccessToken.Token] = AccessTokenSession{
+					AccessToken: se.AccessToken,
+					AccountId:   se.AccountId,
+				}
+				log.Printf("New session for %s with token %s\n", se.AccountId, se.AccessToken.Token)
+				transactionIdChan <- event.TransactionId
+				log.Println("AFTER ", event.TransactionId)
+			case event := <-renewedEventChan:
+				var se sessionEvent
+				data, err := crypto.Decrypt(event.Data.SessionEvent, cryptKey)
+				if err != nil {
+					return
+				}
+				err = json.Unmarshal(data, &se)
+				if err != nil {
+					log.Println("R", err)
+					continue
+				}
+				s.sessions[se.AccessToken.Token] = AccessTokenSession{
+					AccessToken: se.AccessToken,
+					AccountId:   se.AccountId,
+				}
+				log.Printf("Renew session for %s with token %s\n", se.AccountId, se.AccessToken.Token)
+			}
+		}
+	}()
+
+	go func() {
+		tickChan := time.Tick(15 * time.Second)
+		for {
+			for _ = range tickChan {
+				now := time.Now()
+				for key, session := range s.sessions {
+					if session.AccessToken.Expires.After(now) {
+						continue
+					}
+					delete(s.sessions, key)
+				}
+			}
+		}
+	}()
+
+	go func() {
+		log.Println("Start fan")
+		completeChans := make(map[string]transactionCheck)
+		var currentTransactionId uint64
+		for {
+			log.Println("Loop fan")
+			select {
+			case <-ctx.Done():
+				return
+			case completeChan := <-s.transactionChan:
+				log.Println("Loop fan case 1 ", completeChan)
+				if currentTransactionId >= completeChan.transactionId {
+					completeChan.completeChan <- struct{}{}
+					continue
+				}
+				completeChans[uuid.New().String()] = completeChan
+			case transactionId := <-transactionIdChan:
+				log.Println("Loop fan case 2 ", transactionId)
+				if currentTransactionId < transactionId {
+					currentTransactionId = transactionId
+				}
+				for id, completeChan := range completeChans {
+					log.Println(transactionId, completeChan.transactionId)
+					if transactionId < completeChan.transactionId {
+						continue
+					}
+					completeChan.completeChan <- struct{}{}
+					delete(completeChans, id)
+				}
+			}
+		}
+	}()
+	return
+}
+
+func create(accountId string) (accessToken AccessToken, err error) {
+	token, err := crypto.GenToken()
+	if err != nil {
+		return
+	}
+	accessToken = AccessToken{
+		Token:     token,
+		ExpiresIn: ExpiresInSeconds,
+		Expires:   time.Now().Add(ExpiresInSeconds * time.Second),
+	}
+	return
+}
+
+func (s *sessionService) Create(accountId string) (accessToken AccessToken, err error) {
+	accessToken, err = create(accountId)
+	se, err := json.Marshal(&sessionEvent{
+		AccountId:   accountId,
+		AccessToken: accessToken,
+	})
+	ese, err := crypto.Encrypt(se, cryptKey)
+	if err != nil {
+		return
+	}
+	transactionId, err := s.es.StoreAndWithTransactionId(event.Event[encryptedSessionEvent, sessionEventMetadata]{
+		Type: SESSION_CREATED,
+		Data: encryptedSessionEvent{
+			SessionEvent: ese,
+			Expires:      accessToken.Expires,
+		},
+		Metadata: event.Metadata[sessionEventMetadata]{
+			Version:  "1.0.0",
+			DataType: "session_event",
+			Event: sessionEventMetadata{
+				Expires: accessToken.Expires,
+			},
+		},
+	})
+	if err != nil {
+		log.Println("WAHT: ", err)
+		return
+	}
+	completeChan := make(chan struct{})
+	defer close(completeChan)
+	log.Println("Setting transactionChan chan")
+	s.transactionChan <- transactionCheck{
+		transactionId: transactionId,
+		completeChan:  completeChan,
+	}
+	log.Println("Wating for complete chan")
+	<-completeChan
+	log.Println("Done wating for complete chan")
+	return
+}
+
+func (s sessionService) Renew(token string) (accessToken AccessToken, err error) {
+	/*
+		This should just extend the time of the token instead of actually creating a new token.
+	*/
+	session, exists := s.sessions[token]
+	if !exists {
+		err = fmt.Errorf("Sessions does not exist")
+		return
+	}
+	log.Println("SESSION: ", session)
+	if session.AccessToken.Expires.Before(time.Now()) {
+		err = fmt.Errorf("Sessions has expired")
+		return
+	}
+	delete(s.sessions, token)
+	accessToken, err = create(session.AccountId)
+	if err != nil {
+		return
+	}
+	accessToken.Token = token
+	se, err := json.Marshal(&sessionEvent{
+		AccountId:   session.AccountId,
+		AccessToken: accessToken,
+	})
+	if err != nil {
+		return
+	}
+	log.Println(string(se))
+	ese, err := crypto.Encrypt(se, cryptKey)
+	if err != nil {
+		return
+	}
+	err = s.es.Store(event.Event[encryptedSessionEvent, sessionEventMetadata]{
+		Type: SESSION_RENEWED,
+		Data: encryptedSessionEvent{
+			SessionEvent: ese,
+			Expires:      accessToken.Expires,
+		},
+		Metadata: event.Metadata[sessionEventMetadata]{
+			Version:  "1.0.0",
+			DataType: "session_event",
+			Event: sessionEventMetadata{
+				Expires: accessToken.Expires,
+			},
+		},
+	})
+	return
+}
+
+func (s sessionService) Validate(token string) (accessToken AccessToken, accountId string, err error) {
+	log.Println("VT: ", token)
+	session, exists := s.sessions[token]
+	if !exists {
+		err = fmt.Errorf("Sessions does not exist")
+		return
+	}
+	log.Println("VS: ", session)
+	accessToken = session.AccessToken
+	accountId = session.AccountId
+	return
+}

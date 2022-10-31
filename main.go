@@ -1,6 +1,10 @@
 package main
 
 import (
+	"context"
+	"github.com/cantara/cantara-annual-christmasbeer/account"
+	"github.com/cantara/cantara-annual-christmasbeer/account/session"
+	"github.com/cantara/cantara-annual-christmasbeer/account/store"
 	"net"
 	"net/http"
 	"os"
@@ -39,6 +43,7 @@ func main() {
 	loadEnv()
 	since := time.Now()
 
+	log.Println("Initialized webserver")
 	r := gin.Default()
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"*"}
@@ -65,6 +70,36 @@ func main() {
 			"now":           time.Now(),
 		})
 	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	accStore, err := store.Init(ctx)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Initialized account store")
+	accSession, err := session.Init(ctx)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Initialized account session")
+	accService, err := account.InitService(accStore, accSession, ctx)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Initialized account resource")
+	accResource, err := account.InitResource(r, os.Getenv("api_path")+"/account", accService)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Initialized account endpoints")
+	if os.Getenv("account.internal.enable") == "true" {
+		err = accResource.InitResourceInternal()
+		if err != nil {
+			panic(err)
+		}
+		log.Println("Initialized account internal endpoints")
+	}
 
 	r.Run(":" + os.Getenv("port"))
 }
