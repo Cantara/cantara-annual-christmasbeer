@@ -3,7 +3,7 @@
   import Input from "../components/Input.svelte";
   import Checkbox from "../components/Checkbox.svelte";
 
-  function putDatabase() {
+  function register() {
     fetch('/account/' +  body.username, {
       method: 'PUT',
       mode: 'cors',
@@ -59,5 +59,5 @@ $: disabled = !(valid_username && valid_password)// && body.gdpr)
     <p>Check to consent to storage of provided values (GDPRish)</p>
   </div>
   -->
-  <Button click={putDatabase} bind:disabled>Submit</Button>
+  <Button click={register} bind:disabled>Submit</Button>
 </form>
