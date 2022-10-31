@@ -1,7 +1,8 @@
 <script>
   import Button from "../components/Button.svelte";
   import Input from "../components/Input.svelte";
-  import Checkbox from "../components/Checkbox.svelte";
+
+  import { token } from '../stores/token.js';
 
   function register() {
     fetch('/account/' +  body.username, {
@@ -17,12 +18,12 @@
     })
     .then(response => response.json())
     .then(data => {
-      console.log(data)
       if (data.error) {
         console.log(data.error);
         //message.error(data.error);
-        return;
+        return
       }
+      token.set(data)
     })
     .catch((error) => {
       console.log(error);
@@ -40,11 +41,6 @@
   let valid_password = false;
 
   let disabled = false;
-
-  export let user = {
-    name: "",
-    password: "",
-  }
 
 $: disabled = !(valid_username && valid_password)// && body.gdpr)
 </script>

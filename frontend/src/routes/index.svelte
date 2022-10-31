@@ -1,144 +1,15 @@
 <script>
-  import Box from "../components/Box.svelte";
-  import Button from "../components/Button.svelte";
-  import Input from "../components/Input.svelte";
-  import Select from "../components/Select.svelte";
-  import NewScope from "../forms/NewScope.svelte";
-  import NewServer from "../forms/NewServer.svelte";
-  import NewDatabase from "../forms/Login.svelte";
-  import NewService from "../forms/Score.svelte";
   import Login from "../forms/Login.svelte";
   import Register from "../forms/Register.svelte";
   import Score from "../forms/Score.svelte";
 
-  function server() {
-    fetch('/nerthus/server/'+scope+'/'+server_name, {
-      method: 'PUT',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
-      body: JSON.stringify(body),
-      headers: {
-        'Authorization': 'Basic ' + btoa(user.name + ":" + user.password),
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data)
-      if (data.error) {
-        console.log(data.error);
-        //message.error(data.error);
-        return;
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-      //message.error(error);
-    });
-  }
+  import { token } from '../stores/token.js';
 
-  function service() {
-    fetch('/nerthus/service/'+scope+'/'+server_name, {
-      method: 'PUT',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
-      body: JSON.stringify(body),
-      headers: {
-        'Authorization': 'Basic ' + btoa(user.name + ":" + user.password),
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data)
-      if (data.error) {
-        console.log(data.error);
-        //message.error(data.error);
-        return;
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-      //message.error(error);
-    });
-  }
+  let loggedInn = false;
+  const unsubscribe = token.subscribe(value => {
+    loggedInn = value != null;
+  });
 
-  function getLoadbalancers() {
-    fetch('/nerthus/loadbalancers/', {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
-      headers: {
-        'Authorization': 'Basic ' + btoa(user.name + ":" + user.password),
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data)
-      if (data.error) {
-        console.log(data.error);
-        //message.error(data.error);
-        return;
-      }
-      loadbalancers = data.loadbalancers;
-    })
-    .catch((error) => {
-      console.log(error);
-      //message.error(error);
-    });
-  }
-
-  let body = {
-    service: {
-      elb_listener_arn: "",
-      elb_securitygroup_id: "",
-      port: 0,
-      path: "",
-      artifact_id: "",
-      health_report_url: "",
-      filebeat_config_url: "",
-      local_override_properties: "",
-      semantic_update_service_properties: "",
-    },
-    key: "",
-  }
-  let scope = "";
-  let server_name = "";
-
-  let showConsentForm = false;
-  export let registered = false;
-  let gdprconsent = true;
-  let disabled = false;
-  let validEmail = false;
-  let validUsername = false;
-  let validPassword = false;
-  let validConfirmPassword = false;
-  let user = {
-    name: "",
-    password: "",
-  }
-  let loadbalancers = [];
-  let loadbalancer = {};
-  let loadbalancersDropdown = [];
-
-$: {
-  loadbalancersDropdown = loadbalancers.map(value => ({
-    name: value.dns_name,
-    extras: value.paths,
-    arn: value.arn,
-    listener_arn: value.listener_arn,
-    security_group: value.security_group
-  }))
-}
-$: body.service.elb_listener_arn = loadbalancer.listener_arn
-$: body.service.elb_securitygroup_id = loadbalancer.security_group
 </script>
 
 <svelte:head>
@@ -152,6 +23,7 @@ $: body.service.elb_securitygroup_id = loadbalancer.security_group
     <p style="text-align: center;">There are a set of rules for the tasting and points are weighted based on if it is your first time or if you do certain things during the event.</p>
     <p style="text-align: center;">If you have brought a Norwegian beer that is missing from the list. Please ask this years selected newbie and have them add it.</p>
   </div>
+  {#if (!loggedInn)}
   <div class="new_line"/>
   <div class="item">
     <Login />
@@ -159,10 +31,12 @@ $: body.service.elb_securitygroup_id = loadbalancer.security_group
   <div class="item">
     <Register />
   </div>
+  {:else}
   <div class="new_line"/>
   <div class="item">
     <Score />
   </div>
+  {/if}
   <div class="new_line" style="padding-top: 1.5em;"/>
 </div>
 

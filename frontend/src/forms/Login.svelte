@@ -2,6 +2,8 @@
   import Button from "../components/Button.svelte";
   import Input from "../components/Input.svelte";
 
+  import { token } from '../stores/token.js';
+
   function login() {
     fetch('/account/login', {
       method: 'POST',
@@ -22,6 +24,7 @@
         //message.error(data.error);
         return;
       }
+      token.set(data)
     })
     .catch((error) => {
       console.log(error);
@@ -38,11 +41,6 @@
   let valid_password = false;
 
   let disabled = false;
-
-  export let user = {
-    name: "",
-    password: "",
-  }
 
 $: disabled = !(valid_username && valid_password)
 </script>
