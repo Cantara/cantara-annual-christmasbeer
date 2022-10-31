@@ -55,7 +55,7 @@
     },
     key: "",
   }
-  let scope = 50;
+  let scope = -1;
   let server_name = "";
 
   let valid_key = false;

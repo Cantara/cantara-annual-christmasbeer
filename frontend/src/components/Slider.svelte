@@ -1,13 +1,18 @@
 <script>
   export let min_height = "4.4em";
   export let label = ""
-  export let value;
+  export let value = 0;
   export let required = false;
   export let downarrow = false;
   export let min = 0;
   export let max = 100;
   export let valid = false;
   let visible = false;
+  let self;
+
+  function scale(value) {
+    return 100 * ((value - min) / (max - min));
+  }
 
 $: {
   if (required && value < min) {
@@ -18,19 +23,27 @@ $: {
     valid = true;
   }
 }
+
+$: if (self) {
+    if (value < min) {
+      self.style.setProperty("background-size", "0% 100%")
+    } else {
+      self.style.setProperty("background-size", Math.round(scale(value)).toString() + "% 100%")
+    }
+  }
 </script>
 <svelte:head>
   <script src="https://kit.fontawesome.com/673f197acb.js" crossorigin="anonymous"></script>
 </svelte:head>
 
-{#if label != ""}
+{#if label !== ""}
   <fieldset class:invalid={!valid}>
     {#if downarrow}
       <legend><i class='fas fa-angle-down' style="font-size:1.25em"/>{(required ? ' * ' : '') + label}</legend>
     {:else}
       <legend>{(required ? '* ' : '') + label}</legend>
     {/if}
-    <input type="range" bind:value={value} min={min} max={max} />
+    <input type="range" bind:this={self} bind:value={value} min={min} max={max} />
   </fieldset>
 {/if}
 
