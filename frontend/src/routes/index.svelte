@@ -18,9 +18,10 @@
 
 <div class="content flex">
   <div class="item">
-    <h1>Cantara`s annual christmas beer tasting.  Time: Lørdag 20.11, kl. 18:00 ->   Place: 17 etg i Rebel, Universitetsgata 2</h1>
-    <h1 style="color: red">Under development, no data will be stored.</h1>
+    <h1>Cantara`s annual christmas beer tasting. </h1>
     <h4 style="text-align: center;">Cantara holds a beer tasting every year to determine what beers are the best Norwegian christmas beer.</h4>
+    <h4 style="text-align: center;">Time: Lørdag 20.11, kl. 18:00 ->   Place: 17 etg i Rebel, Universitetsgata 2</h4>
+    <h1 style="color: red">Under development, no data will be stored.</h1>
     <p style="text-align: center;">There are a set of rules for the tasting and points are weighted based on if it is your first time or if you do certain things during the event.</p>
     <p style="text-align: center;">If you have brought a Norwegian beer that is missing from the list. Please ask this years selected newbie and have them add it.</p>
 	  <p style="text-align: center;"><a href="https://wiki.cantara.no/display/puben/Puben+Home">Links to earlier years events</a></p>
