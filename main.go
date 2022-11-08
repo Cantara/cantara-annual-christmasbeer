@@ -2,24 +2,15 @@ package main
 
 import (
 	"context"
-	"fmt"
 	log "github.com/cantara/bragi"
 	"github.com/cantara/cantara-annual-christmasbeer/account"
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
-	"github.com/cantara/gober"
-	evStore "github.com/cantara/gober/store"
-	"github.com/cantara/gober/store/inmemory"
+	"github.com/cantara/cantara-annual-christmasbeer/beer"
 	"github.com/cantara/gober/webserver"
-	"github.com/cantara/gober/websocket"
 	"github.com/joho/godotenv"
-	"go/types"
-	"net"
 	"net/http"
-	ws "nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 	"os"
-	"time"
 )
 
 var Version string
@@ -31,29 +22,6 @@ func loadEnv() {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err)
 	}
-}
-
-func GetOutboundIP() net.IP {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP
-}
-
-type beer struct {
-	Name     string  `json:"name"`
-	Brand    string  `json:"brand"`
-	BrewYear int     `json:"brew_year"`
-	ABV      float32 `json:"abv"`
-}
-
-func prov(key string) string {
-	return "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
 }
 
 func main() {
@@ -99,48 +67,7 @@ func main() {
 		}
 		log.Println("Initialized account internal endpoints")
 	}
-
-	s, err := inmemory.Init()
-	if err != nil {
-		panic(err)
-	}
-	es, err := gober.Init[beer, types.Nil](s, "beer", ctx)
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		i := 0
-		for {
-			es.Store(gober.Event[beer, types.Nil]{
-				Type: "create",
-				Data: beer{
-					Name:     fmt.Sprintf("Test%d", i),
-					Brand:    "eXOReaction",
-					BrewYear: 2022,
-					ABV:      5.8,
-				},
-			}, prov)
-			i++
-			time.Sleep(10 * time.Second)
-		}
-	}()
-
-	websocket.Websocket(api, "/beer", func(ctx context.Context, conn *ws.Conn) bool {
-		conn.CloseRead(ctx)
-		//ctxCancel, cancel := context.WithCancel(ctx)
-		stream, err := es.Stream([]string{"create", "update", "delete"}, evStore.STREAM_START, gober.ReadAll[types.Nil](), prov, ctx)
-		if err != nil {
-			log.AddError(err).Error("while starting beer stream")
-		}
-		for e := range stream {
-			err = wsjson.Write(ctx, conn, e.Data)
-			if err != nil {
-				log.AddError(err).Warning("while writing to socket")
-				return false
-			}
-		}
-		return false
-	})
+	_, err = beer.InitResource(api, "", accService, beer.InitService(), ctx)
 
 	serv.Run()
 }
