@@ -4,6 +4,33 @@
   import Input from "../components/Input.svelte";
   import Select from "../components/Select.svelte";
   import Slider from "../components/Slider.svelte";
+  import { onMount, tick } from 'svelte';
+
+  let beers = [];
+  let socket;
+  let board;
+
+  const scrollToBottom = async () => {
+    await tick();
+    board.scrollTop = board.scrollHeight;
+  };
+
+  onMount(() => {
+    socket = new WebSocket('ws://localhost:3030/beer');
+
+    socket.onopen = () => {
+      console.log('socket connected');
+    };
+
+    socket.onmessage = (event) => {
+      if(!event.data) { return }
+      let b = JSON.parse(event.data);
+      beers = [...beers, {name: b.name, extras: [b.brand, b.abv]}];
+      //scrollToBottom();
+      //socket.close();
+      console.log(beers)
+    };
+  });
 
   function putService() {
     let bodyT = body
@@ -56,7 +83,6 @@
     key: "",
   }
   let scope = -1;
-  let server_name = "";
 
   let valid_key = false;
   let valid_scope = false;
@@ -84,114 +110,6 @@
     {
       name: "A2A",
       extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
-    },
-    {
-      name: "H2A",
-      extras: [""],
-    },
-    {
-      name: "ACS",
-      extras: [""],
-    },
-    {
-      name: "CS",
-      extras: [""],
     }
   ];
 
@@ -213,7 +131,7 @@ $: disabled = !(valid_scope && valid_server && (valid_loadbalancer || loadbalanc
 <h2>Register beer score</h2>
 <p>If your beer is missing, please ask this years newbie to help you</p>
 <form on:submit|preventDefault={() => {}}>
-  <Select required label="Beer" values={health_service_types} bind:value={body.service.health.service_type} bind:valid={valid_health_type}/>
+  <Select required label="Beer" values={beers} bind:value={body.service.health.service_type} bind:valid={valid_health_type}/>
   <Slider required label="Rating" bind:value={scope} bind:valid={valid_scope} number/>
   <Input required multiline autogrow label="Comment" bind:value={body.key} bind:valid={valid_key}/>
   <Button click={putService} bind:disabled>Submit</Button>

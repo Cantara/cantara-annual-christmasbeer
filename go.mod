@@ -4,14 +4,14 @@ go 1.19
 
 require (
 	github.com/cantara/bragi v0.6.2
-	github.com/cantara/gober v0.1.0
+	github.com/cantara/gober v0.2.0
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
-	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/joho/godotenv v1.4.0
 	github.com/lestrrat-go/jwx v1.2.25
 	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
+	nhooyr.io/websocket v1.8.7
 )
 
 require (
@@ -21,6 +21,7 @@ require (
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
@@ -30,6 +31,7 @@ require (
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.0 // indirect

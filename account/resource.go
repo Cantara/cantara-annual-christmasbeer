@@ -26,7 +26,7 @@ const (
 
 type resource struct {
 	path             string
-	router           *gin.Engine
+	router           *gin.RouterGroup
 	service          service
 	requireFirstName bool
 	requireLastName  bool
@@ -38,7 +38,7 @@ type validator[bodyT any] struct {
 	service service
 }
 
-func InitResource(router *gin.Engine, path string, s service) (r resource, err error) {
+func InitResource(router *gin.RouterGroup, path string, s service) (r resource, err error) {
 	r = resource{
 		path:    path,
 		router:  router,
@@ -279,7 +279,7 @@ func errorResponse(c *gin.Context, message string, httpStatusCode int) {
 	//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
 	//w.WriteHeader(httpStatusCode)
 	resp := make(map[string]string)
-	resp["message"] = message
+	resp["error"] = message
 	//json.NewEncoder(w).Encode(resp)
 	c.JSON(httpStatusCode, resp)
 }

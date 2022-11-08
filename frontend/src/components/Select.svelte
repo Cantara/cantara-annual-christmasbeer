@@ -38,11 +38,13 @@ $: {
       <li on:click={() => {value = val; open = false}}>
         <hr>
         <nobr><p>{val.name}</p></nobr>
-        <ul class="horizontal">
-        {#each val.extras as extra}
-          <li>{extra}</li>
-        {/each}
-        </ul>
+        {#if (val.extras && Array.isArray(val.extras))}
+          <ul class="horizontal">
+          {#each val.extras as extra}
+            <li>{extra}</li>
+          {/each}
+          </ul>
+        {/if}
       </li>
       {/each}
       <hr>
