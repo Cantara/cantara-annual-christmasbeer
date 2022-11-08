@@ -1,6 +1,7 @@
 <script>
   import Login from "../forms/Login.svelte";
   import Register from "../forms/Register.svelte";
+  import RegisterBeer from "../forms/RegisterBeer.svelte";
   import Score from "../forms/Score.svelte";
 
   import { token } from '../stores/token.js';
@@ -27,18 +28,21 @@
 	  <p style="text-align: center;"><a href="https://wiki.cantara.no/display/puben/Puben+Home">Links to earlier years events</a></p>
   </div>
   {#if (!loggedInn)}
-  <div class="new_line"/>
-  <div class="item">
-    <Login />
-  </div>
-  <div class="item">
-    <Register />
-  </div>
+    <div class="new_line"/>
+    <div class="item">
+      <Login/>
+    </div>
+    <div class="item">
+      <Register/>
+    </div>
   {:else}
-  <div class="new_line"/>
-  <div class="item">
-    <Score />
-  </div>
+    <div class="new_line"/>
+    <div class="item">
+      <Score />
+    </div>
+    <div class="item">
+      <RegisterBeer />
+    </div>
   {/if}
   <div class="new_line" style="padding-top: 1.5em;"/>
 </div>
