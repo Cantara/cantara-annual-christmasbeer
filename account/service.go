@@ -127,6 +127,10 @@ func (s service) Validate(token string) (tokenOut session.AccessToken, accountId
 	return s.session.Validate(token)
 }
 
+func (s service) IsAdmin(token string) bool {
+	return true
+}
+
 func hashPassword(password, salt []byte) ([]byte, error) {
 	if len(salt) < PW_SALT_BYTES {
 		return nil, fmt.Errorf("too week salt")
