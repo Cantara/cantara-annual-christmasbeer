@@ -16,7 +16,7 @@
   };
 
   onMount(() => {
-    socket = new WebSocket('ws://localhost:3030/beer');
+    socket = new WebSocket('ws://'+ location.host + '/beer');
 
     socket.onopen = () => {
       console.log('socket connected');
