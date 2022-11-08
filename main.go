@@ -46,9 +46,10 @@ func GetOutboundIP() net.IP {
 }
 
 type beer struct {
-	Name  string `json:"name"`
-	Brand string `json:"brand"`
-	ABV   string `json:"abv"`
+	Name     string  `json:"name"`
+	Brand    string  `json:"brand"`
+	BrewYear int     `json:"brew_year"`
+	ABV      float32 `json:"abv"`
 }
 
 func prov(key string) string {
@@ -113,9 +114,10 @@ func main() {
 			es.Store(gober.Event[beer, types.Nil]{
 				Type: "create",
 				Data: beer{
-					Name:  fmt.Sprintf("Test%d", i),
-					Brand: "eXOReaction",
-					ABV:   "5.8%",
+					Name:     fmt.Sprintf("Test%d", i),
+					Brand:    "eXOReaction",
+					BrewYear: 2022,
+					ABV:      5.8,
 				},
 			}, prov)
 			i++

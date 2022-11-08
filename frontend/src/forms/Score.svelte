@@ -25,7 +25,7 @@
     socket.onmessage = (event) => {
       if(!event.data) { return }
       let b = JSON.parse(event.data);
-      beers = [...beers, {name: b.name, extras: [b.brand, b.abv]}];
+      beers = [...beers, {name: b.name, extras: [b.brand, b.brew_year, b.abv+"%"]}];
       //scrollToBottom();
       //socket.close();
       console.log(beers)
