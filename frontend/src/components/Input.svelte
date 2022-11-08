@@ -12,6 +12,7 @@
   export let autogrow = false;
   export let downarrow = false;
   export let number = false;
+  export let float = false;
   let visible = false;
 
   const autoGrow = (event) => {
@@ -31,18 +32,30 @@
 $: {
   if (required && !value) {
     valid = false;
-  } else if (value.length < min) {
+  } else if (!number && !float && value.length < min) {
     valid = false;
-  } else if (max !== -1 && value.length > max) {
+  } else if (!number && !float && max !== -1 && value.length > max) {
     valid = false;
-  } else if (email && value !== null && value.length !== 0 && !(/.+@.+\..+/.test(value))) {
+  } else if (email && value !== null && value.length !== 0 && !(/^.+@.+\..+$/.test(value))) {
     valid = false;
   } else if (number && value !== null && value.length !== 0 && (/[^0-9]/.test(value))) {
+    valid = false;
+  } else if (float && value !== null && value.length !== 0 && !(/^[0-9]+\.[0-9]+$/.test(value)) && (/[^0-9]/.test(value))) {
+    valid = false;
+  } else if (number && parseInt(value) < min) {
+    valid = false;
+  } else if (number && parseInt(value) > max) {
+    valid = false;
+  } else if (float && parseFloat(value) < min) {
+    valid = false;
+  } else if (float && parseFloat(value) > max) {
     valid = false;
   } else {
     valid = true;
     if (number) {
       value = parseInt(value)
+    } else if (float) {
+      value = parseFloat(value)
     }
   }
 }

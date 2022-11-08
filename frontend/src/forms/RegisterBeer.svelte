@@ -51,7 +51,7 @@ $: disabled = !(valid_name && valid_brand && valid_brew_year && valid_abv)
 <form on:submit|preventDefault={() => {}}>
   <Input required label="Name" bind:value={body.name} bind:valid={valid_name}/>
   <Input required label="Brand" bind:value={body.brand} bind:valid={valid_brand}/>
-  <Input required number  label="Brew year" bind:value={body.brew_year} bind:valid={valid_brew_year}/>
-  <Input required label="ABV%" bind:value={body.abv} bind:valid={valid_abv}/>
+  <Input required number min=1980 max={new Date().getFullYear()}  label="Brew year" bind:value={body.brew_year} bind:valid={valid_brew_year}/>
+  <Input required float min=0 max=98 label="ABV%" bind:value={body.abv} bind:valid={valid_abv}/>
   <Button click={register} bind:disabled>Submit</Button>
 </form>
