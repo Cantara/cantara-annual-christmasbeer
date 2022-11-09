@@ -14,10 +14,6 @@ import (
 	"os"
 )
 
-var Version string
-
-var BuildTime string
-
 func loadEnv() {
 	err := godotenv.Load(".env")
 	if err != nil {
