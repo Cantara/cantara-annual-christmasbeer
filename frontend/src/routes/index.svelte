@@ -61,7 +61,7 @@
       <Score />
     </div>
     {#if (isAdmin)}
-      <div className="item">
+      <div class="item">
         <RegisterBeer />
       </div>
       <div class="item">
