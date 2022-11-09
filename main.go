@@ -75,7 +75,7 @@ func main() {
 	}
 
 	beerService := beer.InitService()
-	_, err = beer.InitResource(api, "", accService, beerService, ctx)
+	_, err = beer.InitResource(api, "/beer", accService, beerService, ctx)
 
 	log.Println("Checking if admin user exists")
 	_, err = accService.GetByUsername(os.Getenv("admin.username"))

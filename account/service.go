@@ -133,11 +133,7 @@ func (s service) RegisterAdmin(accountId uuid.UUID) (err error) {
 	return s.admin.Register(accountId, struct{}{})
 }
 
-func (s service) IsAdmin(token string) bool {
-	_, accountId, err := s.Validate(token)
-	if err != nil {
-		return false
-	}
+func (s service) IsAdmin(accountId uuid.UUID) bool {
 	return s.admin.IsAdmin(accountId)
 }
 

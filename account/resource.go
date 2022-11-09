@@ -44,10 +44,13 @@ func InitResource(router *gin.RouterGroup, path string, s service) (r resource, 
 		router:  router,
 		service: s,
 	}
+	// These endpoints are actions not objects, this goes against REST.
 	r.router.GET(r.path, r.userHandler())
 	r.router.GET(r.path+"/valid", r.validateHandler())
 	r.router.GET(r.path+"/renew", r.renewHandler())
 	r.router.GET(r.path+"/logins", r.loginsHandler())
+	r.router.PUT(r.path+"/admin/:accountId", r.registerAdminHandler())
+	r.router.GET(r.path+"/admin", r.adminHandler())
 	return
 }
 
@@ -195,6 +198,35 @@ func (res resource) renewHandler() func(c *gin.Context) {
 	})
 }
 
+func (res resource) registerAdminHandler() func(c *gin.Context) {
+	validate := validator[AccountRegister]{service: res.service}
+	return validate.reqWAdmin(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID) {
+		accountIdString := c.Param("accountId")
+		accountId, err := uuid.FromString(accountIdString)
+		if err != nil {
+			errorResponse(c, "Account id must be a uuid", http.StatusBadRequest)
+			return
+		}
+		if res.service.IsAdmin(accountId) {
+			errorResponse(c, "Account is already admin", http.StatusConflict)
+			return
+		}
+		err = res.service.RegisterAdmin(accountId)
+		if err != nil {
+			errorResponse(c, "Could not register account as admin", http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, "")
+	})
+}
+
+func (res resource) adminHandler() func(c *gin.Context) {
+	validate := validator[AccountRegister]{service: res.service}
+	return validate.reqWAdmin(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID) {
+		c.JSON(http.StatusOK, "")
+	})
+}
+
 func (v validator[bodyT]) req(f func(c *gin.Context)) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		if c.Request.Header[CONTENT_TYPE][0] != CONTENT_TYPE_JSON {
@@ -218,6 +250,15 @@ func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessTo
 			log.Println(err)
 			errorResponse(c, "Forbidden", http.StatusForbidden)
 			return
+		}
+		f(c, token, accountId)
+	})
+}
+
+func (v validator[bodyT]) reqWAdmin(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID)) func(c *gin.Context) {
+	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
+		if !v.service.IsAdmin(accountId) {
+			errorResponse(c, "Forbidden", http.StatusForbidden)
 		}
 		f(c, token, accountId)
 	})

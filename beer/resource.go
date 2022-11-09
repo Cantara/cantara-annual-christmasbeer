@@ -32,7 +32,7 @@ const (
 
 type accountService interface {
 	Validate(token string) (tokenOut session.AccessToken, accountId uuid.UUID, err error)
-	IsAdmin(token string) bool
+	IsAdmin(accountId uuid.UUID) bool
 }
 
 type resource struct {
@@ -89,9 +89,8 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 		}
 	}()
 
-	websocket.Websocket(r.router, r.path+"/beer", func(ctx context.Context, conn *ws.Conn) bool {
+	websocket.Websocket(r.router, r.path, func(ctx context.Context, conn *ws.Conn) bool {
 		conn.CloseRead(ctx)
-		//ctxCancel, cancel := context.WithCancel(ctx)
 		stream, err := es.Stream([]string{"create", "update", "delete"}, store.STREAM_START, gober.ReadAll[types.Nil](), prov, ctx)
 		if err != nil {
 			log.AddError(err).Error("while starting beer stream")
@@ -111,7 +110,7 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 
 func (res resource) registerHandler() func(c *gin.Context) {
 	validate := validator[beer]{service: res.aService}
-	return validate.reqAdminWBody(func(c *gin.Context, a beer) {
+	return validate.reqAdminWBody(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID, a beer) {
 		beerid := c.Param("beerid")
 		_, err := res.service.Get(beerid)
 		if err == nil {
@@ -139,9 +138,6 @@ func (res resource) registerHandler() func(c *gin.Context) {
 			errorResponse(c, "Error while registering", http.StatusInternalServerError)
 			return
 		}
-		//errorResponse(c, "Success", http.StatusOK)
-		//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
-		//json.NewEncoder(w).Encode(&token)
 		c.JSON(http.StatusOK, "")
 	})
 }
@@ -185,15 +181,9 @@ func (v validator[bodyT]) reqWBody(f func(c *gin.Context, body bodyT)) func(c *g
 	})
 }
 
-func (v validator[bodyT]) reqAdminWBody(f func(c *gin.Context, body bodyT)) func(c *gin.Context) {
-	return v.req(func(c *gin.Context) {
-		authHeader := getAuthHeader(c)
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			errorResponse(c, "Bad Request. Missing Bearer in "+AUTHORIZATION+" header", http.StatusUnauthorized)
-			return
-		}
-		token := strings.TrimPrefix(authHeader, "Bearer ")
-		if !v.service.IsAdmin(token) {
+func (v validator[bodyT]) reqAdminWBody(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID, body bodyT)) func(c *gin.Context) {
+	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
+		if !v.service.IsAdmin(accountId) {
 			errorResponse(c, "User is not a admin", http.StatusForbidden)
 			return
 		}
@@ -202,7 +192,7 @@ func (v validator[bodyT]) reqAdminWBody(f func(c *gin.Context, body bodyT)) func
 			errorResponse(c, err.Error(), http.StatusBadRequest)
 			return
 		}
-		f(c, body)
+		f(c, token, accountId, body)
 	})
 }
 
