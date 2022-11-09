@@ -2,13 +2,34 @@
   import Login from "../forms/Login.svelte";
   import Register from "../forms/Register.svelte";
   import RegisterBeer from "../forms/RegisterBeer.svelte";
+  import RegisterAdmin from "../forms/RegisterAdmin.svelte";
   import Score from "../forms/Score.svelte";
 
-  import { token } from '../stores/token.js';
+  import {bearer, token} from '../stores/token.js';
 
   let loggedInn = false;
+  let isAdmin = false;
   const unsubscribe = token.subscribe(value => {
     loggedInn = value != null;
+    if (loggedInn) {
+
+      fetch('/account/admin', {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': bearer(),
+        },
+      })
+              .then(response => {
+                if (response.ok) {
+                  isAdmin = true;
+                }
+              });
+    }
   });
 </script>
 
@@ -27,22 +48,26 @@
     <p style="text-align: center;">If you have brought a Norwegian beer that is missing from the list. Please ask this years selected newbie and have them add it.</p>
 	  <p style="text-align: center;"><a href="https://wiki.cantara.no/display/puben/Puben+Home">Links to earlier years events</a></p>
   </div>
+  <div class="new_line"/>
   {#if (!loggedInn)}
-    <div class="new_line"/>
     <div class="item">
-      <Login/>
+      <Login />
     </div>
     <div class="item">
-      <Register/>
+      <Register />
     </div>
   {:else}
-    <div class="new_line"/>
     <div class="item">
       <Score />
     </div>
-    <div class="item">
-      <RegisterBeer />
-    </div>
+    {#if (isAdmin)}
+      <div className="item">
+        <RegisterBeer />
+      </div>
+      <div class="item">
+        <RegisterAdmin />
+      </div>
+    {/if}
   {/if}
   <div class="new_line" style="padding-top: 1.5em;"/>
 </div>
