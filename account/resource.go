@@ -49,7 +49,7 @@ func InitResource(router *gin.RouterGroup, path string, s service) (r resource, 
 	r.router.GET(r.path+"/valid", r.validateHandler())
 	r.router.GET(r.path+"/renew", r.renewHandler())
 	r.router.GET(r.path+"/logins", r.loginsHandler())
-	r.router.PUT(r.path+"/admin/:accountId", r.registerAdminHandler())
+	r.router.PUT(r.path+"/admin/:username", r.registerAdminHandler())
 	r.router.GET(r.path+"/admin", r.adminHandler())
 	return
 }
@@ -201,17 +201,17 @@ func (res resource) renewHandler() func(c *gin.Context) {
 func (res resource) registerAdminHandler() func(c *gin.Context) {
 	validate := validator[AccountRegister]{service: res.service}
 	return validate.reqWAdmin(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID) {
-		accountIdString := c.Param("accountId")
-		accountId, err := uuid.FromString(accountIdString)
+		username := c.Param("username")
+		account, err := res.service.GetByUsername(username)
 		if err != nil {
-			errorResponse(c, "Account id must be a uuid", http.StatusBadRequest)
+			errorResponse(c, "User does not exist", http.StatusBadRequest)
 			return
 		}
-		if res.service.IsAdmin(accountId) {
+		if res.service.IsAdmin(account.Id) {
 			errorResponse(c, "Account is already admin", http.StatusConflict)
 			return
 		}
-		err = res.service.RegisterAdmin(accountId)
+		err = res.service.RegisterAdmin(account.Id)
 		if err != nil {
 			errorResponse(c, "Could not register account as admin", http.StatusInternalServerError)
 			return

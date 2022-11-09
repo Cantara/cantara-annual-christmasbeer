@@ -1,7 +1,7 @@
 <script>
   import Button from "../components/Button.svelte";
   import Input from "../components/Input.svelte";
-  import {token} from "../stores/token";
+  import {bearer} from "../stores/token";
 
   function register() {
     fetch('/beer/' +  body.brand + "_" + body.brew_year + "_" + body.name, {
@@ -13,6 +13,7 @@
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Authorization': bearer(),
       },
     })
             .then(response => response.json())
