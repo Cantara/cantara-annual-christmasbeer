@@ -16,7 +16,12 @@
   };
 
   onMount(() => {
-    socket = new WebSocket('ws://'+ location.host + '/beer');
+    let prot = 'wss'
+
+    if (location.hostname === "localhost" && location.protocol === "http:") {
+      prot = 'ws'
+    }
+    socket = new WebSocket(prot + '://'+ location.host + '/beer');
 
     socket.onopen = () => {
       console.log('socket connected');
