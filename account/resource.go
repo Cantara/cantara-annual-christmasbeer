@@ -120,28 +120,18 @@ func (res resource) registerHandler() func(c *gin.Context) {
 			errorResponse(c, "Error while registring", http.StatusInternalServerError)
 			return
 		}
-		//errorResponse(c, "Success", http.StatusOK)
-		//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
-		//json.NewEncoder(w).Encode(&token)
 		c.JSON(http.StatusOK, token)
 	})
 }
 
 func (res resource) userHandler() func(c *gin.Context) {
 	validate := validator[any]{service: res.service}
-	return validate.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId string) {
-		id, err := uuid.FromString(accountId)
-		if err != nil {
-			errorResponse(c, "AccountID must be of type uuid", http.StatusBadRequest)
-			return
-		}
-		acc, err := res.service.GetById(id)
+	return validate.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
+		acc, err := res.service.GetById(accountId)
 		if err != nil {
 			errorResponse(c, "Not found", http.StatusNotFound)
 			return
 		}
-		//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
-		//json.NewEncoder(w).Encode(acc)
 		c.JSON(http.StatusOK, acc)
 	})
 }
@@ -161,8 +151,6 @@ func (res resource) loginsHandler() func(c *gin.Context) {
 				logins[string(oidc.YOUTUBE)] = fmt.Sprintf("localhost:3000%s/external/session/%s", res.path, oidc.YOUTUBE)
 			}
 		}
-		//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
-		//json.NewEncoder(w).Encode(logins)
 		c.JSON(http.StatusOK, logins)
 	})
 }
@@ -189,22 +177,20 @@ func (res resource) loginHandler() func(c *gin.Context) {
 
 func (res resource) validateHandler() func(c *gin.Context) {
 	validate := validator[any]{service: res.service}
-	return validate.reqWAuth(func(c *gin.Context, _ session.AccessToken, _ string) {
+	return validate.reqWAuth(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID) {
 		errorResponse(c, "valid", http.StatusOK)
 	})
 }
 
 func (res resource) renewHandler() func(c *gin.Context) {
 	validate := validator[any]{service: res.service}
-	return validate.reqWAuth(func(c *gin.Context, token session.AccessToken, _ string) {
+	return validate.reqWAuth(func(c *gin.Context, token session.AccessToken, _ uuid.UUID) {
 		tokenNew, err := res.service.Renew(token.Token)
 		if err != nil {
 			log.Println(err)
 			errorResponse(c, "Error while renewing token: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-		//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
-		//json.NewEncoder(w).Encode(&tokenNew)
 		c.JSON(http.StatusOK, tokenNew)
 	})
 }
@@ -219,7 +205,7 @@ func (v validator[bodyT]) req(f func(c *gin.Context)) func(c *gin.Context) {
 	}
 }
 
-func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessToken, accountId string)) func(c *gin.Context) {
+func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID)) func(c *gin.Context) {
 	return v.req(func(c *gin.Context) {
 		authHeader := getAuthHeader(c)
 		if !strings.HasPrefix(authHeader, "Bearer ") {
@@ -248,8 +234,8 @@ func (v validator[bodyT]) reqWBody(f func(c *gin.Context, body bodyT)) func(c *g
 	})
 }
 
-func (v validator[bodyT]) reqWAuthWBody(f func(c *gin.Context, token session.AccessToken, accountId string, body bodyT)) func(c *gin.Context) {
-	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId string) {
+func (v validator[bodyT]) reqWAuthWBody(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID, body bodyT)) func(c *gin.Context) {
+	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
 		body, err := unmarshalBody[bodyT](c.Request.Body)
 		if err != nil {
 			errorResponse(c, err.Error(), http.StatusBadRequest)
@@ -276,11 +262,8 @@ func unmarshalBody[bodyT any](body io.ReadCloser) (v bodyT, err error) {
 }
 
 func errorResponse(c *gin.Context, message string, httpStatusCode int) {
-	//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
-	//w.WriteHeader(httpStatusCode)
 	resp := make(map[string]string)
 	resp["error"] = message
-	//json.NewEncoder(w).Encode(resp)
 	c.JSON(httpStatusCode, resp)
 }
 

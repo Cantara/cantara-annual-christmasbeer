@@ -22,12 +22,14 @@ const (
 
 type service struct {
 	store   StoreService
+	admin   AdminService
 	session SessionService
 }
 
-func InitService(store StoreService, session SessionService, ctx context.Context) (s service, err error) {
+func InitService(store StoreService, admin AdminService, session SessionService, ctx context.Context) (s service, err error) {
 	s = service{
 		store:   store,
+		admin:   admin,
 		session: session,
 	}
 	return
@@ -94,7 +96,7 @@ func (s service) Register(acc AccountRegister) (token session.AccessToken, err e
 	if err != nil {
 		return
 	}
-	return s.session.Create(a.Id.String())
+	return s.session.Create(a.Id)
 }
 
 func (s service) Login(username, password string) (token session.AccessToken, err error) {
@@ -116,19 +118,27 @@ func (s service) Login(username, password string) (token session.AccessToken, er
 			return
 		}
 	}
-	return s.session.Create(login.AccountId.String())
+	return s.session.Create(login.AccountId)
 }
 
 func (s service) Renew(token string) (tokenOut session.AccessToken, err error) {
 	return s.session.Renew(token)
 }
 
-func (s service) Validate(token string) (tokenOut session.AccessToken, accountId string, err error) {
+func (s service) Validate(token string) (tokenOut session.AccessToken, accountId uuid.UUID, err error) {
 	return s.session.Validate(token)
 }
 
+func (s service) RegisterAdmin(accountId uuid.UUID) (err error) {
+	return s.admin.Register(accountId, struct{}{})
+}
+
 func (s service) IsAdmin(token string) bool {
-	return true
+	_, accountId, err := s.Validate(token)
+	if err != nil {
+		return false
+	}
+	return s.admin.IsAdmin(accountId)
 }
 
 func hashPassword(password, salt []byte) ([]byte, error) {

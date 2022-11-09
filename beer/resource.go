@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cantara/gober/store"
+	"github.com/gofrs/uuid"
 	"go/types"
 	"io"
 	"net/http"
@@ -30,7 +31,7 @@ const (
 )
 
 type accountService interface {
-	Validate(token string) (tokenOut session.AccessToken, accountId string, err error)
+	Validate(token string) (tokenOut session.AccessToken, accountId uuid.UUID, err error)
 	IsAdmin(token string) bool
 }
 
@@ -155,7 +156,7 @@ func (v validator[bodyT]) req(f func(c *gin.Context)) func(c *gin.Context) {
 	}
 }
 
-func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessToken, accountId string)) func(c *gin.Context) {
+func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID)) func(c *gin.Context) {
 	return v.req(func(c *gin.Context) {
 		authHeader := getAuthHeader(c)
 		if !strings.HasPrefix(authHeader, "Bearer ") {
@@ -205,8 +206,8 @@ func (v validator[bodyT]) reqAdminWBody(f func(c *gin.Context, body bodyT)) func
 	})
 }
 
-func (v validator[bodyT]) reqWAuthWBody(f func(c *gin.Context, token session.AccessToken, accountId string, body bodyT)) func(c *gin.Context) {
-	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId string) {
+func (v validator[bodyT]) reqWAuthWBody(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID, body bodyT)) func(c *gin.Context) {
+	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
 		body, err := unmarshalBody[bodyT](c.Request.Body)
 		if err != nil {
 			errorResponse(c, err.Error(), http.StatusBadRequest)

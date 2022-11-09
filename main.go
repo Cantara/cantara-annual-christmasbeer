@@ -4,6 +4,7 @@ import (
 	"context"
 	log "github.com/cantara/bragi"
 	"github.com/cantara/cantara-annual-christmasbeer/account"
+	"github.com/cantara/cantara-annual-christmasbeer/account/admin"
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
 	"github.com/cantara/cantara-annual-christmasbeer/beer"
@@ -45,12 +46,17 @@ func main() {
 		panic(err)
 	}
 	log.Println("Initialized account store")
+	admStore, err := admin.Init[struct{}](ctx)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Initialized admin store")
 	accSession, err := session.Init(ctx)
 	if err != nil {
 		panic(err)
 	}
 	log.Println("Initialized account session")
-	accService, err := account.InitService(accStore, accSession, ctx)
+	accService, err := account.InitService(accStore, admStore, accSession, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +73,38 @@ func main() {
 		}
 		log.Println("Initialized account internal endpoints")
 	}
-	_, err = beer.InitResource(api, "", accService, beer.InitService(), ctx)
+
+	beerService := beer.InitService()
+	_, err = beer.InitResource(api, "", accService, beerService, ctx)
+
+	log.Println("Checking if admin user exists")
+	_, err = accService.GetByUsername(os.Getenv("admin.username"))
+	if err == nil {
+		log.Println("Admin user already exists")
+	} else {
+		log.Println("Registering predefined admin user")
+		token, err := accService.Register(account.AccountRegister{
+			Username:  os.Getenv("admin.username"),
+			Email:     os.Getenv("admin.email"),
+			FirstName: os.Getenv("admin.first_name"),
+			LastName:  os.Getenv("admin.last_name"),
+			Number:    os.Getenv("admin.number"),
+			Password:  os.Getenv("admin.password"),
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		_, accountId, err := accService.Validate(token.Token)
+		if err != nil {
+			panic(err)
+		}
+		log.Println("Registering predefined admin rights")
+		err = accService.RegisterAdmin(accountId)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	serv.Run()
 }

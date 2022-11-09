@@ -1,10 +1,13 @@
 package session
 
-import "time"
+import (
+	"github.com/gofrs/uuid"
+	"time"
+)
 
 type AccessTokenSession struct {
 	AccessToken AccessToken `json:"access_token"`
-	AccountId   string      `json:"account_id"`
+	AccountId   uuid.UUID   `json:"account_id"`
 }
 
 type AccessToken struct {

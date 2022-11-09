@@ -1,0 +1,57 @@
+package admin
+
+import (
+	"context"
+	"github.com/cantara/gober/persistenteventmap"
+	"github.com/cantara/gober/store/inmemory"
+	"github.com/gofrs/uuid"
+	"go/types"
+)
+
+type Privilege[t any] struct {
+	AccountID uuid.UUID `json:"account_id"`
+	Rights    t         `json:"rights"`
+}
+
+type storeService[pt any] struct {
+	accounts persistenteventmap.EventMap[Privilege[pt], types.Nil]
+}
+
+var cryptKey = "2Q82oDggY6CwBs6QHFu3brYjt8JqFILnn68FDN/eTcU="
+
+func Init[pt any](ctx context.Context) (s storeService[pt], err error) {
+	store, err := inmemory.Init()
+	if err != nil {
+		return
+	}
+	acc, err := persistenteventmap.Init[Privilege[pt], types.Nil](store, "privilege", "0.1.0", "admins",
+		"create_admin", "update_admin", "delete_admin", func(key string) string {
+			return cryptKey
+		}, ctx)
+	if err != nil {
+		return
+	}
+	s = storeService[pt]{
+		accounts: acc,
+	}
+	return
+}
+
+func (s storeService[pt]) Register(accountId uuid.UUID, rights pt) (err error) {
+	err = s.accounts.Set(accountId.String(), Privilege[pt]{
+		AccountID: accountId,
+		Rights:    rights,
+	}, types.Nil{})
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (s storeService[pt]) IsAdmin(id uuid.UUID) bool {
+	_, _, err := s.accounts.Get(id.String())
+	if err != nil {
+		return false
+	}
+	return true
+}

@@ -15,7 +15,12 @@ type StoreService interface {
 }
 
 type SessionService interface {
-	Create(accountId string) (accessToken session.AccessToken, err error)
+	Create(accountId uuid.UUID) (accessToken session.AccessToken, err error)
 	Renew(token string) (accessToken session.AccessToken, err error)
-	Validate(token string) (accessToken session.AccessToken, accountId string, err error)
+	Validate(token string) (accessToken session.AccessToken, accountId uuid.UUID, err error)
+}
+
+type AdminService interface {
+	Register(accountId uuid.UUID, rights struct{}) (err error)
+	IsAdmin(accountId uuid.UUID) bool
 }

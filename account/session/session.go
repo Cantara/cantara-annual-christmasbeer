@@ -6,6 +6,7 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/crypto"
 	"github.com/cantara/gober/eventmap"
 	"github.com/cantara/gober/store/inmemory"
+	"github.com/gofrs/uuid"
 	"time"
 
 	log "github.com/cantara/bragi"
@@ -75,7 +76,7 @@ func create() (accessToken AccessToken, err error) {
 	return
 }
 
-func (s sessionService) Create(accountId string) (accessToken AccessToken, err error) {
+func (s sessionService) Create(accountId uuid.UUID) (accessToken AccessToken, err error) {
 	accessToken, err = create()
 	if err != nil {
 		return
@@ -124,7 +125,7 @@ func (s sessionService) Renew(token string) (accessToken AccessToken, err error)
 	return
 }
 
-func (s sessionService) Validate(token string) (accessToken AccessToken, accountId string, err error) {
+func (s sessionService) Validate(token string) (accessToken AccessToken, accountId uuid.UUID, err error) {
 	session, _, err := s.sessions.Get(token)
 	if err != nil {
 		if err == eventmap.ERROR_KEY_NOT_FOUND {
