@@ -4,7 +4,7 @@
   import {bearer} from "../stores/token";
 
   function register() {
-    fetch('/beer/' +  body.brand + "_" + body.brew_year + "_" + body.name, {
+    fetch('/beer/' + encodeURI(body.brand + "_" + body.name + "_" + body.brew_year), {
       method: 'PUT',
       mode: 'cors',
       cache: 'no-cache',

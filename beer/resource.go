@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go/types"
 	"io"
 	"net/http"
 	"strings"
@@ -13,9 +12,6 @@ import (
 
 	log "github.com/cantara/bragi"
 
-	streamStore "github.com/cantara/gober/store"
-	"github.com/cantara/gober/stream"
-	"github.com/cantara/gober/stream/event"
 	"github.com/cantara/gober/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -52,41 +48,21 @@ func prov(key string) string {
 	return "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
 }
 
-func InitResource(router *gin.RouterGroup, path string, st stream.Persistence, as accountService, s service, ctx context.Context) (r resource, err error) {
+func InitResource(router *gin.RouterGroup, path string, as accountService, s service, ctx context.Context) (r resource, err error) {
 	r = resource{
 		path:     path,
 		router:   router,
 		aService: as,
 		service:  s,
 	}
-	es, err := stream.Init[store.Beer, types.Nil](st, "beer", ctx)
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		i := 0
-		for {
-			es.Store(event.Event[store.Beer, types.Nil]{
-				Type: "create",
-				Data: store.Beer{
-					Name:     fmt.Sprintf("Test%d", i),
-					Brand:    "eXOReaction",
-					BrewYear: 2022,
-					ABV:      5.8,
-				},
-			}, prov)
-			i++
-			time.Sleep(10 * time.Second)
-		}
-	}()
 
 	websocket.Websocket(r.router, r.path, func(ctx context.Context, conn *ws.Conn) bool {
 		conn.CloseRead(ctx)
-		s, err := es.Stream(event.AllTypes(), streamStore.STREAM_START, stream.ReadAll[types.Nil](), prov, ctx)
+		stream, err := s.BeerStream(ctx)
 		if err != nil {
 			log.AddError(err).Error("while starting beer stream")
 		}
-		for e := range s {
+		for e := range stream {
 			err = wsjson.Write(ctx, conn, e.Data)
 			if err != nil {
 				log.AddError(err).Warning("while writing to socket")

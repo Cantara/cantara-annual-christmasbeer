@@ -8,7 +8,7 @@ import (
 
 type StoreService interface {
 	Register(account types.Account) (err error)
-	Link(username string, login types.Login) (err error)
+	Link(login types.Login) (err error)
 	GetById(id uuid.UUID) (user types.Account, err error)
 	GetLogin(username string) (login types.Login, err error)
 	GetByUsername(username string) (user types.Account, err error)

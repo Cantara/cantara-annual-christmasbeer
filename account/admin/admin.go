@@ -35,7 +35,7 @@ func Init[pt any](st stream.Stream[Privilege[pt], types.Nil], ctx context.Contex
 }
 
 func (s storeService[pt]) Register(accountId uuid.UUID, rights pt) (err error) {
-	err = s.accounts.Set(accountId.String(), Privilege[pt]{
+	err = s.accounts.Set(Privilege[pt]{
 		AccountID: accountId,
 		Rights:    rights,
 	}, types.Nil{})

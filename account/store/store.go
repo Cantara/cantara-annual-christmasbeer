@@ -36,7 +36,7 @@ func Init(store stream.Persistence, ctx context.Context) (s storeService, err er
 	los, err := persistenteventmap.Init[accountTypes.Login, types.Nil](lin, "login", "0.1.0", func(key string) string {
 		return cryptKey
 	}, func(l accountTypes.Login) string {
-		return ""
+		return l.Id
 	}, ctx)
 	if err != nil {
 		return
@@ -49,15 +49,15 @@ func Init(store stream.Persistence, ctx context.Context) (s storeService, err er
 }
 
 func (s storeService) Register(account accountTypes.Account) (err error) {
-	err = s.users.Set(account.Id.String(), account, types.Nil{})
+	err = s.users.Set(account, types.Nil{})
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (s storeService) Link(username string, login accountTypes.Login) (err error) {
-	err = s.logins.Set(username, login, types.Nil{})
+func (s storeService) Link(login accountTypes.Login) (err error) {
+	err = s.logins.Set(login, types.Nil{})
 	if err != nil {
 		return
 	}

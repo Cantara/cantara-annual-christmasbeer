@@ -88,7 +88,8 @@ func (s service) Register(acc AccountRegister) (token session.AccessToken, err e
 	if err != nil {
 		return
 	}
-	err = s.store.Link(acc.Username, types.Login{
+	err = s.store.Link(types.Login{
+		Id:        acc.Username,
 		AccountId: login.AccountId,
 		Type:      types.INTERNAL,
 		Data:      data,

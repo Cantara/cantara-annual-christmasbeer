@@ -81,8 +81,11 @@ func main() {
 		log.Println("Initialized account internal endpoints")
 	}
 
-	beerService := beer.InitService()
-	_, err = beer.InitResource(api, "/beer", st, accService, beerService, ctx)
+	beerService, err := beer.InitService(st, ctx)
+	if err != nil {
+		panic(err)
+	}
+	_, err = beer.InitResource(api, "/beer", accService, beerService, ctx)
 
 	log.Println("Checking if admin user exists")
 	_, err = accService.GetByUsername(os.Getenv("admin.username"))

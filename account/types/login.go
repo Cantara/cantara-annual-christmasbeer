@@ -35,7 +35,8 @@ func LoginTypeFromString(loginType string) LoginType {
 }
 
 type Login struct {
-	AccountId uuid.UUID `json:"id"`
+	Id        string    `json:"id"`
+	AccountId uuid.UUID `json:"account_id"`
 	Type      LoginType `json:"login_type"`
 	Data      []byte    `json:"data"`
 }
