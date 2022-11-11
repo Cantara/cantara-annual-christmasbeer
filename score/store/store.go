@@ -46,15 +46,16 @@ func (s storeService[pt]) Get(id string) (b Score, err error) {
 }
 
 type Score struct {
-	Scorer  uuid.UUID  `json:"scorer"`
-	Year    int        `json:"year"`
-	Beer    store.Beer `json:"beer"`
-	Rating  int        `json:"rating"`
-	Comment string     `json:"comment"`
+	ScorerId uuid.UUID  `json:"scorer_id"`
+	Scorer   string     `json:"scorer"`
+	Year     int        `json:"year"`
+	Beer     store.Beer `json:"beer"`
+	Rating   int        `json:"rating"`
+	Comment  string     `json:"comment"`
 }
 
 func (s Score) ToId() string {
-	return fmt.Sprintf("%s_%d_%s", s.Scorer, s.Year, s.Beer.ToId())
+	return fmt.Sprintf("%s_%d_%s", s.ScorerId, s.Year, s.Beer.ToId())
 }
 
 type ScoreMetadata struct {

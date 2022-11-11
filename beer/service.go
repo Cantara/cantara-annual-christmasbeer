@@ -2,7 +2,6 @@ package beer
 
 import (
 	"context"
-	log "github.com/cantara/bragi"
 	"github.com/cantara/cantara-annual-christmasbeer/beer/store"
 	streamStore "github.com/cantara/gober/store"
 	"github.com/cantara/gober/stream"
@@ -38,7 +37,6 @@ func InitService(st stream.Persistence, ctx context.Context) (s service, err err
 
 func (s service) Get(id string) (b store.Beer, err error) {
 	b, err = s.store.Get(id)
-	log.AddError(err).Println(b, id)
 	return
 }
 

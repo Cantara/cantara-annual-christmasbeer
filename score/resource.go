@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/cantara/bragi"
+	"github.com/cantara/cantara-annual-christmasbeer/account/types"
 	"io"
 	"net/http"
 	"strconv"
@@ -30,6 +31,7 @@ const (
 
 type accountService interface {
 	Validate(token string) (tokenOut session.AccessToken, accountId uuid.UUID, err error)
+	GetById(id uuid.UUID) (user types.Account, err error)
 }
 
 type beerService interface {
@@ -113,13 +115,19 @@ func (res resource) registerHandler() func(c *gin.Context) {
 			errorResponse(c, "rating must be in the range of a dice, 1 - 6", http.StatusBadRequest)
 			return
 		}
-
+		user, err := res.aService.GetById(userid)
+		if err != nil {
+			log.AddError(err).Error("while getting user info for score")
+			errorResponse(c, "while getting user info", http.StatusInternalServerError)
+			return
+		}
 		s := store.Score{
-			Year:    scoreYear,
-			Scorer:  userid,
-			Beer:    beer,
-			Rating:  score.Rating,
-			Comment: score.Comment,
+			Year:     scoreYear,
+			ScorerId: userid,
+			Scorer:   user.FirstName,
+			Beer:     beer,
+			Rating:   score.Rating,
+			Comment:  score.Comment,
 		}
 		_, err = res.service.Get(s.ToId())
 		if err == nil {

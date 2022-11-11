@@ -40,9 +40,10 @@ type validator[bodyT any] struct {
 
 func InitResource(router *gin.RouterGroup, path string, s service) (r resource, err error) {
 	r = resource{
-		path:    path,
-		router:  router,
-		service: s,
+		path:             path,
+		router:           router,
+		service:          s,
+		requireFirstName: true,
 	}
 	// These endpoints are actions not objects, this goes against REST.
 	r.router.GET(r.path, r.userHandler())

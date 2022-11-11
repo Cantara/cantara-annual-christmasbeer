@@ -38,7 +38,6 @@ func InitService(st stream.Persistence, ctx context.Context) (s service, err err
 
 func (s service) Get(id string) (b store.Score, err error) {
 	b, err = s.store.Get(id)
-	log.AddError(err).Println(b, id)
 	return
 }
 

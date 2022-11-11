@@ -33,11 +33,13 @@
 
   let body = {
     username: "",
+    firstname: "",
     password: "",
     //gdpr: false,
   }
 
   let valid_username = false;
+  let valid_firstname = false;
   let valid_password = false;
 
   let disabled = false;
@@ -48,6 +50,7 @@ $: disabled = !(valid_username && valid_password)// && body.gdpr)
 <h2>Register</h2>
 <form on:submit|preventDefault={() => {}}>
   <Input required label="Username" bind:value={body.username} bind:valid={valid_username} min=3 />
+  <Input required label="Name" bind:value={body.firstname} bind:valid={valid_firstname} min=3 />
   <Input required label="Password" password bind:value={body.password} bind:valid={valid_password} min=6 max=64 />
   <!--
   <div style="display: inline-flex">

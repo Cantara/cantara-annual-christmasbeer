@@ -84,7 +84,7 @@
 {#if (lastScores && Array.isArray(lastScores))}
     <ol>
         {#each lastScores as score}
-            <li>{score.beer.brand} {score.beer.name} {score.beer.brew_year}: {parseInt(score.rating)}<br> {score.comment}</li>
+            <li>{score.beer.brand} {score.beer.name} {score.beer.brew_year}: {parseInt(score.rating)} {score.scorer}<br> {score.comment}</li>
         {/each}
     </ol>
 {/if}

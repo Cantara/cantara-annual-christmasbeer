@@ -27,6 +27,7 @@ func loadEnv() {
 
 func main() {
 	loadEnv()
+	log.SetLevel(log.INFO)
 
 	serv := webserver.Init()
 	log.Println("Initialized webserver")
