@@ -8,6 +8,7 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
 	"github.com/cantara/cantara-annual-christmasbeer/beer"
+	"github.com/cantara/cantara-annual-christmasbeer/score"
 	"github.com/cantara/gober/store/inmemory"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/webserver"
@@ -86,6 +87,12 @@ func main() {
 		panic(err)
 	}
 	_, err = beer.InitResource(api, "/beer", accService, beerService, ctx)
+
+	scoreService, err := score.InitService(st, ctx)
+	if err != nil {
+		panic(err)
+	}
+	_, err = score.InitResource(api, "/score", accService, beerService, scoreService, ctx)
 
 	log.Println("Checking if admin user exists")
 	_, err = accService.GetByUsername(os.Getenv("admin.username"))

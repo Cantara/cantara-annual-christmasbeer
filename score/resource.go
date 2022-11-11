@@ -1,16 +1,15 @@
-package beer
+package score
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/cantara/bragi"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
-	"time"
-
-	log "github.com/cantara/bragi"
 
 	"github.com/cantara/gober/websocket"
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,8 @@ import (
 	"nhooyr.io/websocket/wsjson"
 
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
-	"github.com/cantara/cantara-annual-christmasbeer/beer/store"
+	beerStore "github.com/cantara/cantara-annual-christmasbeer/beer/store"
+	"github.com/cantara/cantara-annual-christmasbeer/score/store"
 )
 
 const (
@@ -30,13 +30,17 @@ const (
 
 type accountService interface {
 	Validate(token string) (tokenOut session.AccessToken, accountId uuid.UUID, err error)
-	IsAdmin(accountId uuid.UUID) bool
+}
+
+type beerService interface {
+	Get(id string) (b beerStore.Beer, err error)
 }
 
 type resource struct {
 	path     string
 	router   *gin.RouterGroup
 	aService accountService
+	bService beerService
 	service  service
 }
 
@@ -44,15 +48,12 @@ type validator[bodyT any] struct {
 	service accountService
 }
 
-func prov(key string) string {
-	return "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
-}
-
-func InitResource(router *gin.RouterGroup, path string, as accountService, s service, ctx context.Context) (r resource, err error) {
+func InitResource(router *gin.RouterGroup, path string, as accountService, bs beerService, s service, ctx context.Context) (r resource, err error) {
 	r = resource{
 		path:     path,
 		router:   router,
 		aService: as,
+		bService: bs,
 		service:  s,
 	}
 
@@ -71,35 +72,61 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 		}
 		return false
 	})
-	r.router.PUT(r.path+"/:beerId", r.registerHandler())
+	r.router.PUT(r.path+"/:scoreYear/:beerId", r.registerHandler())
 	return
 }
 
+type score struct {
+	Rating  int    `json:"rating"`
+	Comment string `json:"comment"`
+}
+
 func (res resource) registerHandler() func(c *gin.Context) {
-	validate := validator[store.Beer]{service: res.aService}
-	return validate.reqAdminWBody(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID, a store.Beer) {
+	validate := validator[score]{service: res.aService}
+	return validate.reqWAuthWBody(func(c *gin.Context, _ session.AccessToken, userid uuid.UUID, score score) {
 		beerId := c.Param("beerId")
-		_, err := res.service.Get(beerId)
+		beer, err := res.bService.Get(beerId)
+		if err != nil {
+			errorResponse(c, "Beer missind", http.StatusBadRequest)
+			return
+		}
+
+		scoreYear, err := strconv.Atoi(c.Param("scoreYear"))
+		if err != nil {
+			errorResponse(c, "Score year needs to be four didgets", http.StatusBadRequest)
+			return
+		}
+
+		if scoreYear < 1980 {
+			errorResponse(c, "score year is too old. please contact admin if this is a relevant request", http.StatusBadRequest)
+			return
+		}
+
+		if beer.BrewYear > scoreYear {
+			errorResponse(c,
+				"Can not score a beer that wasn't brewed yet",
+				http.StatusBadRequest)
+			return
+		}
+
+		if score.Rating < 1 || score.Rating > 6 {
+			errorResponse(c, "rating must be in the range of a dice, 1 - 6", http.StatusBadRequest)
+			return
+		}
+
+		s := store.Score{
+			Year:    scoreYear,
+			Scorer:  userid,
+			Beer:    beer,
+			Rating:  score.Rating,
+			Comment: score.Comment,
+		}
+		_, err = res.service.Get(s.ToId())
 		if err == nil {
-			//TODO: Should create an event here
-			errorResponse(c, "Conflict", http.StatusConflict)
+			errorResponse(c, "score already added", http.StatusConflict)
 			return
 		}
-
-		if 1980 > a.BrewYear || a.BrewYear > time.Now().Year() {
-			errorResponse(c,
-				"Bad Request "+fmt.Sprintf("brew year must be within the past 40ish years"),
-				http.StatusBadRequest)
-			return
-		}
-		if 0 > a.ABV || a.ABV > 98 {
-			errorResponse(c,
-				"Bad Request "+fmt.Sprintf("abv must be within a valid alcohol percentage range"),
-				http.StatusBadRequest)
-			return
-		}
-
-		err = res.service.Register(a)
+		err = res.service.Register(s)
 		if err != nil {
 			log.Println(err)
 			errorResponse(c, "Error while registering", http.StatusInternalServerError)
@@ -145,21 +172,6 @@ func (v validator[bodyT]) reqWBody(f func(c *gin.Context, body bodyT)) func(c *g
 			return
 		}
 		f(c, body)
-	})
-}
-
-func (v validator[bodyT]) reqAdminWBody(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID, body bodyT)) func(c *gin.Context) {
-	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
-		if !v.service.IsAdmin(accountId) {
-			errorResponse(c, "User is not a admin", http.StatusForbidden)
-			return
-		}
-		body, err := unmarshalBody[bodyT](c.Request.Body)
-		if err != nil {
-			errorResponse(c, err.Error(), http.StatusBadRequest)
-			return
-		}
-		f(c, token, accountId, body)
 	})
 }
 

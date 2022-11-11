@@ -4,6 +4,7 @@
   import RegisterBeer from "../forms/RegisterBeer.svelte";
   import RegisterAdmin from "../forms/RegisterAdmin.svelte";
   import Score from "../forms/Score.svelte";
+  import Scores from "../forms/Scores.svelte";
 
   import {bearer, token} from '../stores/token.js';
 
@@ -69,6 +70,10 @@
       </div>
     {/if}
   {/if}
+  <div class="new_line"/>
+  <div class="item">
+    <Scores/>
+  </div>
   <div class="new_line" style="padding-top: 1.5em;"/>
 </div>
 
