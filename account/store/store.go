@@ -4,7 +4,7 @@ import (
 	"context"
 	accountTypes "github.com/cantara/cantara-annual-christmasbeer/account/types"
 	"github.com/cantara/gober/persistenteventmap"
-	"github.com/cantara/gober/store/inmemory"
+	"github.com/cantara/gober/stream"
 	"github.com/gofrs/uuid"
 	"go/types"
 )
@@ -16,22 +16,28 @@ type storeService struct {
 
 var cryptKey = "2Q82oDggY6CwBs6QHFu3brYjt8JqFILnn68FDN/eTcU="
 
-func Init(ctx context.Context) (s storeService, err error) {
-	store, err := inmemory.Init()
+func Init(store stream.Persistence, ctx context.Context) (s storeService, err error) {
+	acc, err := stream.Init[accountTypes.Account, types.Nil](store, "account", ctx)
 	if err != nil {
 		return
 	}
-	res, err := persistenteventmap.Init[accountTypes.Account, types.Nil](store, "user", "0.1.0", "register_user",
-		"create_register_user", "update_register_user", "delete_register_user", func(key string) string {
-			return cryptKey
-		}, ctx)
+	lin, err := stream.Init[accountTypes.Login, types.Nil](store, "login", ctx)
 	if err != nil {
 		return
 	}
-	los, err := persistenteventmap.Init[accountTypes.Login, types.Nil](store, "login", "0.1.0", "user_login",
-		"create_user_login", "update_user_login", "delete_user_login", func(key string) string {
-			return cryptKey
-		}, ctx)
+	res, err := persistenteventmap.Init[accountTypes.Account, types.Nil](acc, "account", "0.1.0", func(key string) string {
+		return cryptKey
+	}, func(a accountTypes.Account) string {
+		return a.Id.String()
+	}, ctx)
+	if err != nil {
+		return
+	}
+	los, err := persistenteventmap.Init[accountTypes.Login, types.Nil](lin, "login", "0.1.0", func(key string) string {
+		return cryptKey
+	}, func(l accountTypes.Login) string {
+		return ""
+	}, ctx)
 	if err != nil {
 		return
 	}

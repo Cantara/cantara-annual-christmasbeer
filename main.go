@@ -8,8 +8,11 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
 	"github.com/cantara/cantara-annual-christmasbeer/beer"
+	"github.com/cantara/gober/store/inmemory"
+	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/webserver"
 	"github.com/joho/godotenv"
+	"go/types"
 	"net/http"
 	"os"
 )
@@ -37,12 +40,20 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	accStore, err := store.Init(ctx)
+	st, err := inmemory.Init()
+	if err != nil {
+		panic(err)
+	}
+	accStore, err := store.Init(st, ctx)
 	if err != nil {
 		panic(err)
 	}
 	log.Println("Initialized account store")
-	admStore, err := admin.Init[struct{}](ctx)
+	adminStream, err := stream.Init[admin.Privilege[struct{}], types.Nil](st, "account", ctx)
+	if err != nil {
+		return
+	}
+	admStore, err := admin.Init[struct{}](adminStream, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +82,7 @@ func main() {
 	}
 
 	beerService := beer.InitService()
-	_, err = beer.InitResource(api, "/beer", accService, beerService, ctx)
+	_, err = beer.InitResource(api, "/beer", st, accService, beerService, ctx)
 
 	log.Println("Checking if admin user exists")
 	_, err = accService.GetByUsername(os.Getenv("admin.username"))

@@ -1,4 +1,4 @@
-package admin
+package store
 
 import (
 	"context"
@@ -51,4 +51,11 @@ func (s storeService[pt]) IsAdmin(id uuid.UUID) bool {
 		return false
 	}
 	return true
+}
+
+type Beer struct {
+	Name     string  `json:"name"`
+	Brand    string  `json:"brand"`
+	BrewYear int     `json:"brew_year"`
+	ABV      float32 `json:"abv"`
 }

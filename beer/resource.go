@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cantara/gober/store"
-	"github.com/gofrs/uuid"
 	"go/types"
 	"io"
 	"net/http"
@@ -15,13 +13,17 @@ import (
 
 	log "github.com/cantara/bragi"
 
-	"github.com/cantara/cantara-annual-christmasbeer/account/session"
-	"github.com/cantara/gober"
-	"github.com/cantara/gober/store/inmemory"
+	streamStore "github.com/cantara/gober/store"
+	"github.com/cantara/gober/stream"
+	"github.com/cantara/gober/stream/event"
 	"github.com/cantara/gober/websocket"
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	ws "nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
+
+	"github.com/cantara/cantara-annual-christmasbeer/account/session"
+	"github.com/cantara/cantara-annual-christmasbeer/beer/store"
 )
 
 const (
@@ -46,38 +48,27 @@ type validator[bodyT any] struct {
 	service accountService
 }
 
-type beer struct {
-	Name     string  `json:"name"`
-	Brand    string  `json:"brand"`
-	BrewYear int     `json:"brew_year"`
-	ABV      float32 `json:"abv"`
-}
-
 func prov(key string) string {
 	return "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
 }
 
-func InitResource(router *gin.RouterGroup, path string, as accountService, s service, ctx context.Context) (r resource, err error) {
+func InitResource(router *gin.RouterGroup, path string, st stream.Persistence, as accountService, s service, ctx context.Context) (r resource, err error) {
 	r = resource{
 		path:     path,
 		router:   router,
 		aService: as,
 		service:  s,
 	}
-	st, err := inmemory.Init()
-	if err != nil {
-		panic(err)
-	}
-	es, err := gober.Init[beer, types.Nil](st, "beer", ctx)
+	es, err := stream.Init[store.Beer, types.Nil](st, "beer", ctx)
 	if err != nil {
 		panic(err)
 	}
 	go func() {
 		i := 0
 		for {
-			es.Store(gober.Event[beer, types.Nil]{
+			es.Store(event.Event[store.Beer, types.Nil]{
 				Type: "create",
-				Data: beer{
+				Data: store.Beer{
 					Name:     fmt.Sprintf("Test%d", i),
 					Brand:    "eXOReaction",
 					BrewYear: 2022,
@@ -91,11 +82,11 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 
 	websocket.Websocket(r.router, r.path, func(ctx context.Context, conn *ws.Conn) bool {
 		conn.CloseRead(ctx)
-		stream, err := es.Stream([]string{"create", "update", "delete"}, store.STREAM_START, gober.ReadAll[types.Nil](), prov, ctx)
+		s, err := es.Stream(event.AllTypes(), streamStore.STREAM_START, stream.ReadAll[types.Nil](), prov, ctx)
 		if err != nil {
 			log.AddError(err).Error("while starting beer stream")
 		}
-		for e := range stream {
+		for e := range s {
 			err = wsjson.Write(ctx, conn, e.Data)
 			if err != nil {
 				log.AddError(err).Warning("while writing to socket")
@@ -109,8 +100,8 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 }
 
 func (res resource) registerHandler() func(c *gin.Context) {
-	validate := validator[beer]{service: res.aService}
-	return validate.reqAdminWBody(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID, a beer) {
+	validate := validator[store.Beer]{service: res.aService}
+	return validate.reqAdminWBody(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID, a store.Beer) {
 		beerid := c.Param("beerid")
 		_, err := res.service.Get(beerid)
 		if err == nil {
