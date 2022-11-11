@@ -50,7 +50,8 @@ func InitResource(router *gin.RouterGroup, path string, s service) (r resource, 
 	r.router.GET(r.path+"/valid", r.validateHandler())
 	r.router.GET(r.path+"/renew", r.renewHandler())
 	r.router.GET(r.path+"/logins", r.loginsHandler())
-	r.router.PUT(r.path+"/admin/:username", r.registerAdminHandler())
+	r.router.GET(r.path+"/accounts", r.accountsHandler())
+	r.router.PUT(r.path+"/privilege/:account_id", r.registerAdminHandler())
 	r.router.GET(r.path+"/admin", r.adminHandler())
 	return
 }
@@ -159,6 +160,18 @@ func (res resource) loginsHandler() func(c *gin.Context) {
 	})
 }
 
+func (res resource) accountsHandler() func(c *gin.Context) {
+	validate := validator[any]{service: res.service}
+	return validate.reqWAdmin(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID) {
+		accounts, err := res.service.Accounts()
+		if err != nil {
+			errorResponse(c, "unable to get all accounts", http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, accounts)
+	})
+}
+
 type loginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -200,10 +213,14 @@ func (res resource) renewHandler() func(c *gin.Context) {
 }
 
 func (res resource) registerAdminHandler() func(c *gin.Context) {
-	validate := validator[AccountRegister]{service: res.service}
-	return validate.reqWAdmin(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID) {
-		username := c.Param("username")
-		account, err := res.service.GetByUsername(username)
+	validate := validator[Rights]{service: res.service}
+	return validate.reqWAdminWBody(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID, right Rights) {
+		accountId, err := uuid.FromString(c.Param("account_id"))
+		if err != nil {
+			errorResponse(c, "account id must be a uuid", http.StatusBadRequest)
+			return
+		}
+		account, err := res.service.GetById(accountId)
 		if err != nil {
 			errorResponse(c, "User does not exist", http.StatusBadRequest)
 			return
@@ -212,7 +229,7 @@ func (res resource) registerAdminHandler() func(c *gin.Context) {
 			errorResponse(c, "Account is already admin", http.StatusConflict)
 			return
 		}
-		err = res.service.RegisterAdmin(account.Id)
+		err = res.service.RegisterAdmin(account.Id, right)
 		if err != nil {
 			errorResponse(c, "Could not register account as admin", http.StatusInternalServerError)
 			return
@@ -260,6 +277,7 @@ func (v validator[bodyT]) reqWAdmin(f func(c *gin.Context, token session.AccessT
 	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
 		if !v.service.IsAdmin(accountId) {
 			errorResponse(c, "Forbidden", http.StatusForbidden)
+			return
 		}
 		f(c, token, accountId)
 	})
@@ -278,6 +296,17 @@ func (v validator[bodyT]) reqWBody(f func(c *gin.Context, body bodyT)) func(c *g
 
 func (v validator[bodyT]) reqWAuthWBody(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID, body bodyT)) func(c *gin.Context) {
 	return v.reqWAuth(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
+		body, err := unmarshalBody[bodyT](c.Request.Body)
+		if err != nil {
+			errorResponse(c, err.Error(), http.StatusBadRequest)
+			return
+		}
+		f(c, token, accountId, body)
+	})
+}
+
+func (v validator[bodyT]) reqWAdminWBody(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID, body bodyT)) func(c *gin.Context) {
+	return v.reqWAdmin(func(c *gin.Context, token session.AccessToken, accountId uuid.UUID) {
 		body, err := unmarshalBody[bodyT](c.Request.Body)
 		if err != nil {
 			errorResponse(c, err.Error(), http.StatusBadRequest)

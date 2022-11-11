@@ -35,6 +35,10 @@ func InitService(store StoreService, admin AdminService, session SessionService,
 	return
 }
 
+func (s service) Accounts() (accounts []types.Account, err error) {
+	return s.store.Accounts()
+}
+
 func (s service) GetById(id uuid.UUID) (acc types.Account, err error) {
 	return s.store.GetById(id)
 }
@@ -130,12 +134,16 @@ func (s service) Validate(token string) (tokenOut session.AccessToken, accountId
 	return s.session.Validate(token)
 }
 
-func (s service) RegisterAdmin(accountId uuid.UUID) (err error) {
-	return s.admin.Register(accountId, struct{}{})
+func (s service) RegisterAdmin(accountId uuid.UUID, r Rights) (err error) {
+	return s.admin.Register(accountId, r)
 }
 
 func (s service) IsAdmin(accountId uuid.UUID) bool {
-	return s.admin.IsAdmin(accountId)
+	p, err := s.admin.IsAdmin(accountId)
+	if err != nil {
+		return false
+	}
+	return p.Rights.Admin
 }
 
 func hashPassword(password, salt []byte) ([]byte, error) {

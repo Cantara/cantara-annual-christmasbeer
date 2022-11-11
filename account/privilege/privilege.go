@@ -1,7 +1,8 @@
-package admin
+package privilege
 
 import (
 	"context"
+	log "github.com/cantara/bragi"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
 	"github.com/gofrs/uuid"
@@ -39,16 +40,15 @@ func (s storeService[pt]) Register(accountId uuid.UUID, rights pt) (err error) {
 		AccountID: accountId,
 		Rights:    rights,
 	}, types.Nil{})
+	log.AddError(err).Info("SET", accountId, rights)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (s storeService[pt]) IsAdmin(id uuid.UUID) bool {
-	_, _, err := s.accounts.Get(id.String())
-	if err != nil {
-		return false
-	}
-	return true
+func (s storeService[pt]) IsAdmin(id uuid.UUID) (p Privilege[pt], err error) {
+	p, _, err = s.accounts.Get(id.String())
+	log.AddError(err).Info("GET", p, id)
+	return
 }

@@ -2,7 +2,7 @@
   import Login from "../forms/Login.svelte";
   import Register from "../forms/Register.svelte";
   import RegisterBeer from "../forms/RegisterBeer.svelte";
-  import RegisterAdmin from "../forms/RegisterAdmin.svelte";
+  import RegisterAdmin from "../forms/RegisterPrivilege.svelte";
   import Score from "../forms/Score.svelte";
   import Scores from "../forms/Scores.svelte";
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	log "github.com/cantara/bragi"
 	"github.com/cantara/cantara-annual-christmasbeer/account"
-	"github.com/cantara/cantara-annual-christmasbeer/account/admin"
+	"github.com/cantara/cantara-annual-christmasbeer/account/privilege"
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
 	"github.com/cantara/cantara-annual-christmasbeer/beer"
@@ -51,11 +51,11 @@ func main() {
 		panic(err)
 	}
 	log.Println("Initialized account store")
-	adminStream, err := stream.Init[admin.Privilege[struct{}], types.Nil](st, "account", ctx)
+	adminStream, err := stream.Init[privilege.Privilege[account.Rights], types.Nil](st, "account", ctx)
 	if err != nil {
 		return
 	}
-	admStore, err := admin.Init[struct{}](adminStream, ctx)
+	admStore, err := privilege.Init[account.Rights](adminStream, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -118,7 +118,7 @@ func main() {
 			panic(err)
 		}
 		log.Println("Registering predefined admin rights")
-		err = accService.RegisterAdmin(accountId)
+		err = accService.RegisterAdmin(accountId, account.Rights{Admin: true})
 		if err != nil {
 			panic(err)
 		}

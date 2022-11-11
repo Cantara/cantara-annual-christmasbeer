@@ -1,6 +1,7 @@
 package account
 
 import (
+	"github.com/cantara/cantara-annual-christmasbeer/account/privilege"
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/account/types"
 	"github.com/gofrs/uuid"
@@ -9,6 +10,7 @@ import (
 type StoreService interface {
 	Register(account types.Account) (err error)
 	Link(login types.Login) (err error)
+	Accounts() (accounts []types.Account, err error)
 	GetById(id uuid.UUID) (user types.Account, err error)
 	GetLogin(username string) (login types.Login, err error)
 	GetByUsername(username string) (user types.Account, err error)
@@ -21,6 +23,6 @@ type SessionService interface {
 }
 
 type AdminService interface {
-	Register(accountId uuid.UUID, rights struct{}) (err error)
-	IsAdmin(accountId uuid.UUID) bool
+	Register(accountId uuid.UUID, rights Rights) (err error)
+	IsAdmin(accountId uuid.UUID) (p privilege.Privilege[Rights], err error)
 }

@@ -64,6 +64,14 @@ func (s storeService) Link(login accountTypes.Login) (err error) {
 	return
 }
 
+func (s storeService) Accounts() (accounts []accountTypes.Account, err error) {
+	s.users.Range(func(_ string, account accountTypes.Account, _ types.Nil) error {
+		accounts = append(accounts, account)
+		return nil
+	})
+	return
+}
+
 func (s storeService) GetById(id uuid.UUID) (user accountTypes.Account, err error) {
 	return s.getUser(id)
 }

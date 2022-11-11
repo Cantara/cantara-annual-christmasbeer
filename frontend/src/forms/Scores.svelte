@@ -72,10 +72,10 @@
       }).slice(0, 5);
       //scrollToBottom();
       //socket.close();
-      console.log(highestRated);
-      console.log(mostRated);
-      console.log(lastScores);
-      console.log(scores);
+      //console.log(highestRated);
+      //console.log(mostRated);
+      //console.log(lastScores);
+      //console.log(scores);
     };
   });
 </script>

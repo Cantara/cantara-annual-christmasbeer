@@ -22,3 +22,8 @@ type Crypt struct {
 	Id  string `json:"id"`
 	Key string `json:"key"`
 }
+
+type Rights struct {
+	Newbie bool `json:"newbie"`
+	Admin  bool `json:"admin"`
+}
