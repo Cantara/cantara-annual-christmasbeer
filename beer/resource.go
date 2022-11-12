@@ -77,7 +77,7 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 
 func (res resource) registerHandler() func(c *gin.Context) {
 	validate := validator[store.Beer]{service: res.aService}
-	return validate.reqAdminWBody(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID, a store.Beer) {
+	return validate.reqWAuthWBody(func(c *gin.Context, _ session.AccessToken, _ uuid.UUID, a store.Beer) {
 		beerId := c.Param("beerId")
 		_, err := res.service.Get(beerId)
 		if err == nil {

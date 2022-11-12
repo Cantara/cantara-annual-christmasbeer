@@ -61,10 +61,10 @@
     <div class="item">
       <Score />
     </div>
+    <div class="item">
+      <RegisterBeer />
+    </div>
     {#if (isAdmin)}
-      <div class="item">
-        <RegisterBeer />
-      </div>
       <div class="item">
         <RegisterAdmin />
       </div>
