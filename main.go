@@ -9,6 +9,7 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
 	"github.com/cantara/cantara-annual-christmasbeer/beer"
 	"github.com/cantara/cantara-annual-christmasbeer/score"
+	"github.com/cantara/gober/store/eventstore"
 	"github.com/cantara/gober/store/inmemory"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/webserver"
@@ -42,9 +43,19 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	st, err := inmemory.Init()
-	if err != nil {
-		panic(err)
+	var st stream.Persistence
+	if os.Getenv("inmem") == "true" {
+		var err error
+		st, err = inmemory.Init()
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		var err error
+		st, err = eventstore.Init()
+		if err != nil {
+			panic(err)
+		}
 	}
 	accStore, err := store.Init(st, ctx)
 	if err != nil {
