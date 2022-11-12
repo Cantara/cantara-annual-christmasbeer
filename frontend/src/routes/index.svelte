@@ -44,7 +44,6 @@
     <h4 style="text-align: center;">Cantara holds a beer tasting every year to determine what beers are the best Norwegian christmas beer.</h4>
     <h4 style="text-align: center;">Time: Lørdag 12.11-2022, kl. 18:00 -></h4>
     <h4 style="text-align: center;">Place: 17 etg i Rebel, Universitetsgata 2</h4>
-    <h3 style="color: red">Under development, no data will be stored.</h3>
     <p style="text-align: center;">There are a set of rules for the tasting and points are weighted based on if it is your first time or if you do certain things during the event.</p>
     <p style="text-align: center;">If you have brought a Norwegian beer that is missing from the list. Please ask this years selected newbie and have them add it.</p>
 	  <p style="text-align: center;"><a href="https://wiki.cantara.no/display/puben/Puben+Home">Links to earlier years events</a></p>
