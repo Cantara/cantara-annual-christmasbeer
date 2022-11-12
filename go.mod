@@ -7,7 +7,7 @@ require (
 	github.com/cantara/gober v0.3.4
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.8.1
-	github.com/gofrs/uuid v4.3.0+incompatible
+	github.com/gofrs/uuid v4.3.1+incompatible
 	github.com/joho/godotenv v1.4.0
 	github.com/lestrrat-go/jwx v1.2.25
 	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
