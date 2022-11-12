@@ -7,6 +7,7 @@ import (
 	streamStore "github.com/cantara/gober/store"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event"
+	"github.com/gofrs/uuid"
 	"time"
 )
 
@@ -15,12 +16,17 @@ type Store interface {
 	Get(id string) (b store.Score, err error)
 }
 
-type service struct {
-	stream stream.Stream[store.Score, store.ScoreMetadata]
-	store  Store
+type Account interface {
+	IsNewbie(id uuid.UUID) bool
 }
 
-func InitService(st stream.Persistence, ctx context.Context) (s service, err error) {
+type service struct {
+	stream  stream.Stream[store.Score, store.ScoreMetadata]
+	store   Store
+	account Account
+}
+
+func InitService(st stream.Persistence, a Account, ctx context.Context) (s service, err error) {
 	scoreStream, err := stream.Init[store.Score, store.ScoreMetadata](st, "score", ctx)
 	if err != nil {
 		panic(err)
@@ -30,8 +36,9 @@ func InitService(st stream.Persistence, ctx context.Context) (s service, err err
 		return
 	}
 	s = service{
-		stream: scoreStream,
-		store:  scoreStore,
+		stream:  scoreStream,
+		store:   scoreStore,
+		account: a,
 	}
 	return
 }
@@ -42,6 +49,13 @@ func (s service) Get(id string) (b store.Score, err error) {
 }
 
 func (s service) Register(b store.Score) (err error) {
+	b.Rating = float32(b.RatingBase)
+	b.Weight = 1
+	b.Newbie = s.account.IsNewbie(b.ScorerId)
+	if b.Newbie {
+		b.Weight = .5
+		b.Rating = b.Rating * b.Weight
+	}
 	return s.store.Set(b)
 }
 

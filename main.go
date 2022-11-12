@@ -100,7 +100,7 @@ func main() {
 	}
 	_, err = beer.InitResource(api, "/beer", accService, beerService, ctx)
 
-	scoreService, err := score.InitService(st, ctx)
+	scoreService, err := score.InitService(st, accService, ctx)
 	if err != nil {
 		panic(err)
 	}

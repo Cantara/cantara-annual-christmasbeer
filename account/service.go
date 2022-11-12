@@ -139,11 +139,19 @@ func (s service) RegisterAdmin(accountId uuid.UUID, r Rights) (err error) {
 }
 
 func (s service) IsAdmin(accountId uuid.UUID) bool {
-	p, err := s.admin.IsAdmin(accountId)
+	p, err := s.admin.Rights(accountId)
 	if err != nil {
 		return false
 	}
 	return p.Rights.Admin
+}
+
+func (s service) IsNewbie(accountId uuid.UUID) bool {
+	p, err := s.admin.Rights(accountId)
+	if err != nil {
+		return false
+	}
+	return p.Rights.Newbie
 }
 
 func hashPassword(password, salt []byte) ([]byte, error) {

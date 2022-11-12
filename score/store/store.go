@@ -46,12 +46,15 @@ func (s storeService[pt]) Get(id string) (b Score, err error) {
 }
 
 type Score struct {
-	ScorerId uuid.UUID  `json:"scorer_id"`
-	Scorer   string     `json:"scorer"`
-	Year     int        `json:"year"`
-	Beer     store.Beer `json:"beer"`
-	Rating   int        `json:"rating"`
-	Comment  string     `json:"comment"`
+	ScorerId   uuid.UUID  `json:"scorer_id"`
+	Scorer     string     `json:"scorer"`
+	Year       int        `json:"year"`
+	Beer       store.Beer `json:"beer"`
+	Rating     float32    `json:"rating"`
+	RatingBase int        `json:"rating_base"`
+	Weight     float32    `json:"weight"`
+	Newbie     bool       `json:"newbie"`
+	Comment    string     `json:"comment"`
 }
 
 func (s Score) ToId() string {

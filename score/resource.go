@@ -122,12 +122,12 @@ func (res resource) registerHandler() func(c *gin.Context) {
 			return
 		}
 		s := store.Score{
-			Year:     scoreYear,
-			ScorerId: userid,
-			Scorer:   user.FirstName,
-			Beer:     beer,
-			Rating:   score.Rating,
-			Comment:  score.Comment,
+			Year:       scoreYear,
+			ScorerId:   userid,
+			Scorer:     user.FirstName,
+			Beer:       beer,
+			RatingBase: score.Rating,
+			Comment:    score.Comment,
 		}
 		_, err = res.service.Get(s.ToId())
 		if err == nil {

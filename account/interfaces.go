@@ -24,5 +24,5 @@ type SessionService interface {
 
 type AdminService interface {
 	Register(accountId uuid.UUID, rights Rights) (err error)
-	IsAdmin(accountId uuid.UUID) (p privilege.Privilege[Rights], err error)
+	Rights(accountId uuid.UUID) (p privilege.Privilege[Rights], err error)
 }
