@@ -63,6 +63,9 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 			log.AddError(err).Error("while starting beer stream")
 		}
 		for e := range stream {
+			if e.Data.Brand == "Asahi" {
+				continue
+			}
 			err = wsjson.Write(ctx, conn, e.Data)
 			if err != nil {
 				log.AddError(err).Warning("while writing to socket")
