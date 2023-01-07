@@ -3,7 +3,7 @@ module github.com/cantara/cantara-annual-christmasbeer
 go 1.19
 
 require (
-	github.com/cantara/bragi v0.6.2
+	github.com/cantara/bragi v0.6.3
 	github.com/cantara/gober v0.3.4
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.8.1
