@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/cantara/bragi v0.6.3
-	github.com/cantara/gober v0.10.1
+	github.com/cantara/gober v0.10.2
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.8.2
 	github.com/gofrs/uuid v4.3.1+incompatible
