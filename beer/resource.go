@@ -56,7 +56,9 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 		service:  s,
 	}
 
-	websocket.Websocket(r.router, r.path, func(ctx context.Context, conn *ws.Conn) bool {
+	websocket.Websocket(r.router, r.path, func(c *gin.Context) bool {
+		return true
+	}, func(ctx context.Context, conn *ws.Conn, _ gin.Params) bool {
 		conn.CloseRead(ctx)
 		stream, err := s.BeerStream(ctx)
 		if err != nil {

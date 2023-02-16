@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/cantara/cantara-annual-christmasbeer/crypto"
 	"github.com/cantara/gober/eventmap"
-	"github.com/cantara/gober/store/inmemory"
+	"github.com/cantara/gober/stream/event/store/inmemory"
 	"github.com/gofrs/uuid"
 	"time"
 
@@ -17,21 +17,17 @@ const (
 )
 
 type sessionService struct {
-	sessions eventmap.EventMap[AccessTokenSession, sessionEventMetadata]
+	sessions eventmap.EventMap[AccessTokenSession]
 }
 
 var cryptKey = "2Q82oDggY6CwBs6QHFu3brYjt8JqFILnn68FDN/eTcU="
 
-type sessionEventMetadata struct {
-	Expires time.Time `json:"expires"`
-}
-
 func Init(ctx context.Context) (s sessionService, err error) {
-	store, err := inmemory.Init()
+	store, err := inmemory.Init("authentication_session", ctx)
 	if err != nil {
 		return
 	}
-	edSession, err := eventmap.Init[AccessTokenSession, sessionEventMetadata](store, "session", "1.0.0", "authentication_session", func(key string) string {
+	edSession, err := eventmap.Init[AccessTokenSession](store, "session", "1.0.0", func(key string) string {
 		return cryptKey
 	}, ctx)
 	if err != nil {
@@ -47,7 +43,7 @@ func Init(ctx context.Context) (s sessionService, err error) {
 			for range tickChan {
 				now := time.Now()
 				for _, key := range s.sessions.Keys() {
-					session, _, err := s.sessions.Get(key)
+					session, err := s.sessions.Get(key)
 					if err != nil {
 						log.Println(err)
 						continue
@@ -85,10 +81,7 @@ func (s sessionService) Create(accountId uuid.UUID) (accessToken AccessToken, er
 		AccountId:   accountId,
 		AccessToken: accessToken,
 	}
-	sem := sessionEventMetadata{
-		Expires: accessToken.Expires,
-	}
-	err = s.sessions.Set(accessToken.Token, ats, sem)
+	err = s.sessions.Set(accessToken.Token, ats)
 	return
 }
 
@@ -96,7 +89,7 @@ func (s sessionService) Renew(token string) (accessToken AccessToken, err error)
 	/*
 		This should just extend the time of the token instead of actually creating a new token.
 	*/
-	session, _, err := s.sessions.Get(token)
+	session, err := s.sessions.Get(token)
 	if err != nil {
 		if err == eventmap.ERROR_KEY_NOT_FOUND {
 			err = fmt.Errorf("sessions does not exist")
@@ -118,15 +111,12 @@ func (s sessionService) Renew(token string) (accessToken AccessToken, err error)
 		AccountId:   session.AccountId,
 		AccessToken: accessToken,
 	}
-	sem := sessionEventMetadata{
-		Expires: accessToken.Expires,
-	}
-	err = s.sessions.Set(accessToken.Token, ats, sem)
+	err = s.sessions.Set(accessToken.Token, ats)
 	return
 }
 
 func (s sessionService) Validate(token string) (accessToken AccessToken, accountId uuid.UUID, err error) {
-	session, _, err := s.sessions.Get(token)
+	session, err := s.sessions.Get(token)
 	if err != nil {
 		if err == eventmap.ERROR_KEY_NOT_FOUND {
 			err = fmt.Errorf("sessions does not exist")

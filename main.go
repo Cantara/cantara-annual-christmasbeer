@@ -9,14 +9,14 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
 	"github.com/cantara/cantara-annual-christmasbeer/beer"
 	"github.com/cantara/cantara-annual-christmasbeer/score"
-	"github.com/cantara/gober/store/eventstore"
-	"github.com/cantara/gober/store/inmemory"
 	"github.com/cantara/gober/stream"
+	"github.com/cantara/gober/stream/event/store/eventstore"
+	"github.com/cantara/gober/stream/event/store/inmemory"
 	"github.com/cantara/gober/webserver"
 	"github.com/joho/godotenv"
-	"go/types"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func loadEnv() {
@@ -30,7 +30,15 @@ func main() {
 	loadEnv()
 	log.SetLevel(log.INFO)
 
-	serv := webserver.Init()
+	portString := os.Getenv("webserver.port")
+	port, err := strconv.Atoi(portString)
+	if err != nil {
+		log.AddError(err).Fatal("while getting webserver port")
+	}
+	serv, err := webserver.Init(uint16(port))
+	if err != nil {
+		log.AddError(err).Fatal("while initializing webserver")
+	}
 	log.Println("Initialized webserver")
 
 	api := serv.API
@@ -43,29 +51,55 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	var st stream.Persistence
-	if os.Getenv("inmem") == "true" {
-		var err error
-		st, err = inmemory.Init()
+	var accountStream stream.Stream
+	var adminStream stream.Stream
+	var beerStream stream.Stream
+	var scoreStream stream.Stream
+	if esHost := os.Getenv("eventstore.host"); len(esHost) > 1 {
+		es, err := eventstore.NewClient(esHost)
 		if err != nil {
-			panic(err)
+			log.AddError(err).Fatal("while creating eventstore client")
+		}
+		accountStream, err = eventstore.NewStream(es, "account", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while creating account stream")
+		}
+		adminStream, err = eventstore.NewStream(es, "admin", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while creating admin stream")
+		}
+		beerStream, err = eventstore.NewStream(es, "beer", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while creating beer stream")
+		}
+		scoreStream, err = eventstore.NewStream(es, "score", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while creating score stream")
 		}
 	} else {
 		var err error
-		st, err = eventstore.Init()
+		accountStream, err = inmemory.Init("account", ctx)
 		if err != nil {
-			panic(err)
+			log.AddError(err).Fatal("while creating account stream")
+		}
+		adminStream, err = inmemory.Init("admin", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while creating admin stream")
+		}
+		beerStream, err = inmemory.Init("beer", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while creating beer stream")
+		}
+		scoreStream, err = inmemory.Init("score", ctx)
+		if err != nil {
+			log.AddError(err).Fatal("while creating score stream")
 		}
 	}
-	accStore, err := store.Init(st, ctx)
+	accStore, err := store.Init(accountStream, ctx)
 	if err != nil {
 		panic(err)
 	}
 	log.Println("Initialized account store")
-	adminStream, err := stream.Init[privilege.Privilege[account.Rights], types.Nil](st, "account", ctx)
-	if err != nil {
-		return
-	}
 	admStore, err := privilege.Init[account.Rights](adminStream, ctx)
 	if err != nil {
 		panic(err)
@@ -94,13 +128,13 @@ func main() {
 		log.Println("Initialized account internal endpoints")
 	}
 
-	beerService, err := beer.InitService(st, ctx)
+	beerService, err := beer.InitService(beerStream, ctx)
 	if err != nil {
 		panic(err)
 	}
 	_, err = beer.InitResource(api, "/beer", accService, beerService, ctx)
 
-	scoreService, err := score.InitService(st, accService, ctx)
+	scoreService, err := score.InitService(scoreStream, accService, ctx)
 	if err != nil {
 		panic(err)
 	}

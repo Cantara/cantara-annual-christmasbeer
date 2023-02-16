@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
-	"go/types"
+	"github.com/cantara/gober/stream/event"
+	"github.com/cantara/gober/stream/event/store"
 )
 
 type storeService[pt any] struct {
-	beers persistenteventmap.EventMap[Beer, types.Nil]
+	beers persistenteventmap.EventMap[Beer]
 }
 
 var cryptKey = "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
 
-func Init[pt any](st stream.Stream[Beer, types.Nil], ctx context.Context) (s storeService[pt], err error) {
-	beerMap, err := persistenteventmap.Init[Beer, types.Nil](st, "beer", "0.1.0", func(key string) string {
+func Init[pt any](st stream.Stream, ctx context.Context) (s storeService[pt], err error) {
+	beerMap, err := persistenteventmap.Init[Beer](st, "beer", "0.1.0", func(key string) string {
 		return cryptKey
 	}, func(b Beer) string {
 		return b.ToId()
@@ -30,7 +31,7 @@ func Init[pt any](st stream.Stream[Beer, types.Nil], ctx context.Context) (s sto
 }
 
 func (s storeService[pt]) Set(b Beer) (err error) {
-	err = s.beers.Set(b, types.Nil{})
+	err = s.beers.Set(b)
 	if err != nil {
 		return
 	}
@@ -38,8 +39,11 @@ func (s storeService[pt]) Set(b Beer) (err error) {
 }
 
 func (s storeService[pt]) Get(id string) (b Beer, err error) {
-	b, _, err = s.beers.Get(id)
+	b, err = s.beers.Get(id)
 	return
+}
+func (s storeService[pt]) Stream(ctx context.Context) (out <-chan event.Event[Beer], err error) {
+	return s.beers.Stream(event.AllTypes(), store.STREAM_START, stream.ReadDataType("beer"), ctx)
 }
 
 type Beer struct {

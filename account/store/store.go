@@ -6,26 +6,17 @@ import (
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
 	"github.com/gofrs/uuid"
-	"go/types"
 )
 
 type storeService struct {
-	users  persistenteventmap.EventMap[accountTypes.Account, types.Nil]
-	logins persistenteventmap.EventMap[accountTypes.Login, types.Nil]
+	users  persistenteventmap.EventMap[accountTypes.Account]
+	logins persistenteventmap.EventMap[accountTypes.Login]
 }
 
 var cryptKey = "2Q82oDggY6CwBs6QHFu3brYjt8JqFILnn68FDN/eTcU="
 
-func Init(store stream.Persistence, ctx context.Context) (s storeService, err error) {
-	acc, err := stream.Init[accountTypes.Account, types.Nil](store, "account", ctx)
-	if err != nil {
-		return
-	}
-	lin, err := stream.Init[accountTypes.Login, types.Nil](store, "login", ctx)
-	if err != nil {
-		return
-	}
-	res, err := persistenteventmap.Init[accountTypes.Account, types.Nil](acc, "account", "0.1.0", func(key string) string {
+func Init(store stream.Stream, ctx context.Context) (s storeService, err error) {
+	res, err := persistenteventmap.Init[accountTypes.Account](store, "account", "0.1.0", func(key string) string {
 		return cryptKey
 	}, func(a accountTypes.Account) string {
 		return a.Id.String()
@@ -33,7 +24,7 @@ func Init(store stream.Persistence, ctx context.Context) (s storeService, err er
 	if err != nil {
 		return
 	}
-	los, err := persistenteventmap.Init[accountTypes.Login, types.Nil](lin, "login", "0.1.0", func(key string) string {
+	los, err := persistenteventmap.Init[accountTypes.Login](store, "login", "0.1.0", func(key string) string {
 		return cryptKey
 	}, func(l accountTypes.Login) string {
 		return l.Id
@@ -49,7 +40,7 @@ func Init(store stream.Persistence, ctx context.Context) (s storeService, err er
 }
 
 func (s storeService) Register(account accountTypes.Account) (err error) {
-	err = s.users.Set(account, types.Nil{})
+	err = s.users.Set(account)
 	if err != nil {
 		return
 	}
@@ -57,7 +48,7 @@ func (s storeService) Register(account accountTypes.Account) (err error) {
 }
 
 func (s storeService) Link(login accountTypes.Login) (err error) {
-	err = s.logins.Set(login, types.Nil{})
+	err = s.logins.Set(login)
 	if err != nil {
 		return
 	}
@@ -65,7 +56,7 @@ func (s storeService) Link(login accountTypes.Login) (err error) {
 }
 
 func (s storeService) Accounts() (accounts []accountTypes.Account, err error) {
-	s.users.Range(func(_ string, account accountTypes.Account, _ types.Nil) error {
+	s.users.Range(func(_ string, account accountTypes.Account) error {
 		accounts = append(accounts, account)
 		return nil
 	})
@@ -90,11 +81,11 @@ func (s storeService) GetByUsername(username string) (user accountTypes.Account,
 }
 
 func (s storeService) getUser(id uuid.UUID) (user accountTypes.Account, err error) {
-	user, _, err = s.users.Get(id.String())
+	user, err = s.users.Get(id.String())
 	return
 }
 
 func (s storeService) getLogin(username string) (login accountTypes.Login, err error) {
-	login, _, err = s.logins.Get(username)
+	login, err = s.logins.Get(username)
 	return
 }

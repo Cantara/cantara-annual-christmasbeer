@@ -6,19 +6,21 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/beer/store"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
+	"github.com/cantara/gober/stream/event"
+	eventStore "github.com/cantara/gober/stream/event/store"
 	"github.com/gofrs/uuid"
 )
 
 type storeService[pt any] struct {
-	scores persistenteventmap.EventMap[Score, ScoreMetadata]
+	scores persistenteventmap.EventMap[Score]
 }
 
 func CryptoKey(_ string) string {
 	return "a1BNjgicHSQ/YKgG8qhvi9I2MdZXcXQNoef7bnimDLI="
 }
 
-func Init[pt any](st stream.Stream[Score, ScoreMetadata], ctx context.Context) (s storeService[pt], err error) {
-	scoreMap, err := persistenteventmap.Init[Score, ScoreMetadata](st, "score", "0.1.0", CryptoKey, func(s Score) string {
+func Init[pt any](st stream.Stream, ctx context.Context) (s storeService[pt], err error) {
+	scoreMap, err := persistenteventmap.Init[Score](st, "score", "0.1.0", CryptoKey, func(s Score) string {
 		return s.ToId()
 	}, ctx)
 	if err != nil {
@@ -31,9 +33,7 @@ func Init[pt any](st stream.Stream[Score, ScoreMetadata], ctx context.Context) (
 }
 
 func (s storeService[pt]) Set(b Score) (err error) {
-	err = s.scores.Set(b, ScoreMetadata{
-		Year: b.Year,
-	})
+	err = s.scores.Set(b)
 	if err != nil {
 		return
 	}
@@ -41,8 +41,12 @@ func (s storeService[pt]) Set(b Score) (err error) {
 }
 
 func (s storeService[pt]) Get(id string) (b Score, err error) {
-	b, _, err = s.scores.Get(id)
+	b, err = s.scores.Get(id)
 	return
+}
+
+func (s storeService[pt]) Stream(ctx context.Context) (out <-chan event.Event[Score], err error) {
+	return s.scores.Stream(event.AllTypes(), eventStore.STREAM_START, stream.ReadDataType("score"), ctx)
 }
 
 type Score struct {
@@ -59,8 +63,4 @@ type Score struct {
 
 func (s Score) ToId() string {
 	return fmt.Sprintf("%s_%d_%s", s.ScorerId, s.Year, s.Beer.ToId())
-}
-
-type ScoreMetadata struct {
-	Year int `json:"year"`
 }
