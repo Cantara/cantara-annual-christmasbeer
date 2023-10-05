@@ -8,7 +8,7 @@ require (
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.8.2
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx v1.2.26
 	golang.org/x/crypto v0.13.0
 	nhooyr.io/websocket v1.8.7
