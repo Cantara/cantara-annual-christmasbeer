@@ -13,7 +13,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx v1.2.26
 	golang.org/x/crypto v0.14.0
-	nhooyr.io/websocket v1.8.9
+	nhooyr.io/websocket v1.8.10
 )
 
 require (
