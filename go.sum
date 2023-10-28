@@ -47,6 +47,8 @@ github.com/cantara/gober v0.18.1 h1:b2tQUgsyM1kF90rnxEe++b8lGjw0aczso7KlZxYpkjs=
 github.com/cantara/gober v0.18.1/go.mod h1:Ol9D82Dwx8djdtRSrSuso/2GljqLb3pUXL8xkMmynz8=
 github.com/cantara/gober v0.18.2 h1:yqesM9LGhac5zcvHMfHYm9UJCv7lhjto0yZ25UDzaJY=
 github.com/cantara/gober v0.18.2/go.mod h1:h5GlEXcVxwNJN1gwW5RUbiB0ksDikKlowzdCbguvz28=
+github.com/cantara/gober v0.18.3 h1:XHes1A6Vwjamwq+T66EkEE3OQ5uESFtEPB10il9WGY0=
+github.com/cantara/gober v0.18.3/go.mod h1:rfhSo3zfPRmtCpJq1mCy4062n2dYRHubClDT9RXdYHA=
 github.com/cenkalti/backoff/v3 v3.0.0 h1:ske+9nBpD9qZsTBoF41nW5L+AIuFBKMeze18XQ3eG1c=
 github.com/cenkalti/backoff/v3 v3.0.0/go.mod h1:cIeZDE3IrqwwJl6VUwCN6trj1oXrTS4rc0ij+ULvLYs=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -381,6 +383,8 @@ golang.org/x/crypto v0.14.0/go.mod h1:MVFd36DqK4CsrnJYDkBA3VC4m2GkXAM0PvzMCn4JQf
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb h1:PaBZQdo+iSDyHT053FjUCgZQ/9uqVwPOcl7KSWhKn6w=
 golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
+golang.org/x/exp v0.0.0-20231006140011-7918f672742d h1:jtJma62tbqLibJ5sFQz8bKtEM8rJBtfilJ2qTU199MI=
+golang.org/x/exp v0.0.0-20231006140011-7918f672742d/go.mod h1:ldy0pHrwJyGW56pPQzzkH36rKxoZW1tw7ZJpeKx+hdo=
 golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
 golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
 golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=
