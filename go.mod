@@ -6,7 +6,7 @@ toolchain go1.21.1
 
 require (
 	github.com/cantara/bragi v0.7.4
-	github.com/cantara/gober v0.18.5
+	github.com/cantara/gober v0.18.6
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gofrs/uuid v4.4.0+incompatible
