@@ -7,6 +7,10 @@
 </main>
 
 <style>
+@font-face {
+    font-family: 'YouthTouch';
+    src: URL('YouthTouchDemoRegular-4VwY.ttf') format('truetype');
+}
 :root {
   /* https://www.canva.com/colors/color-wheel/ */
   --orange: #FCA611;

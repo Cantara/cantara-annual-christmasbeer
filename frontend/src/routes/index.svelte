@@ -39,15 +39,17 @@
 </svelte:head>
 
 <div class="content flex">
+  <h1>Cantara`s annual christmas beer tasting</h1>
   <div class="item">
-    <h1>Cantara`s annual christmas beer tasting. </h1>
-    <h4 style="text-align: center;">Cantara holds a beer tasting every year to determine what beers are the best Norwegian christmas beer.</h4>
-    <h4 style="text-align: center;">Time: Lørdag 12.11-2022, kl. 18:00 -></h4>
-    <h4 style="text-align: center;">Place: 17 etg i Rebel, Universitetsgata 2</h4>
-    <h4 style="text-align: center;">NOTE!!! The physical tasting has completed, but we'll keep the voting open for remote votes until 20.12</h4>
-    <p style="text-align: center;">There are a set of rules for the tasting and points are weighted based on if it is your first time or if you do certain things during the event.</p>
-    <p style="text-align: center;">If you have brought a Norwegian beer that is missing from the list. Please ask this years selected newbie and have them add it.</p>
-	  <p style="text-align: center;"><a href="https://wiki.cantara.no/display/puben/Puben+Home">Links to earlier years events</a></p>
+    <h4 style="text-align: left;">Cantara holds a beer tasting every year to determine what beers are the best Norwegian christmas beer.</h4>
+    <h4 style="text-align: left;">Time: Lørdag 12.11-2022, kl. 18:00 -></h4>
+    <h4 style="text-align: left;">Place: 17 etg i Rebel, Universitetsgata 2</h4>
+  </div>
+  <div class="item">
+    <h4 style="text-align: left;">NOTE!!! The physical tasting has completed, but we'll keep the voting open for remote votes until 20.12</h4>
+    <p>There are a set of rules for the tasting and points are weighted based on if it is your first time or if you do certain things during the event.</p>
+    <p>If you have brought a Norwegian beer that is missing from the list. Please ask this years selected newbie and have them add it.</p>
+    <p><a href="https://wiki.cantara.no/display/puben/Puben+Home">Links to earlier years events</a></p>
   </div>
   <div class="new_line"/>
   {#if (!loggedInn)}
@@ -82,7 +84,9 @@
 		color: var(--primary);
 		font-size: 3em;
 		font-weight: 350;
-    margin: .5rem 0;
+		margin: .5rem 0;
+		font-style: italic;
+		font-family: YouthTouch;
 	}
   p {
     text-align: left;
@@ -125,6 +129,11 @@
 
   .item {
     flex: 0 0 45%;
+  }
+  @media screen and (max-width: 720px) {
+    .item {
+      flex: 0 0 80%;
+    }
   }
   .min_item {
     flex: 0 0 20%;
