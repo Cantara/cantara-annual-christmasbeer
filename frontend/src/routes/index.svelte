@@ -40,6 +40,7 @@
 
 <div class="content flex">
   <h1>Cantara`s annual christmas beer tasting</h1>
+  {#if (!loggedInn)}
   <div class="item">
     <h4 style="text-align: left;">Cantara holds a beer tasting every year to determine what beers are the best Norwegian christmas beer.</h4>
     <h4 style="text-align: left;">Time: Lørdag 12.11-2022, kl. 18:00 -></h4>
@@ -52,7 +53,6 @@
     <p><a href="https://wiki.cantara.no/display/puben/Puben+Home">Links to earlier years events</a></p>
   </div>
   <div class="new_line"/>
-  {#if (!loggedInn)}
     <div class="item">
       <Login />
     </div>
