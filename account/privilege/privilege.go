@@ -2,6 +2,8 @@ package privilege
 
 import (
 	"context"
+
+	"github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
 	"github.com/gofrs/uuid"
@@ -19,9 +21,7 @@ type storeService[pt any] struct {
 var cryptKey = "2Q82oDggY6CwBs6QHFu3brYjt8JqFILnn68FDN/eTcU="
 
 func Init[pt any](st stream.Stream, ctx context.Context) (s storeService[pt], err error) {
-	acc, err := persistenteventmap.Init[Privilege[pt]](st, "privilege", "0.1.0", func(key string) string {
-		return cryptKey
-	}, func(p Privilege[pt]) string {
+	acc, err := persistenteventmap.Init[Privilege[pt]](st, "privilege", "0.1.0", stream.StaticProvider(sbragi.RedactedString(cryptKey)), func(p Privilege[pt]) string {
 		return p.AccountID.String()
 	}, ctx)
 	if err != nil {

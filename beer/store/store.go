@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
+
+	"github.com/cantara/bragi/sbragi"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event"
@@ -16,9 +18,7 @@ type storeService[pt any] struct {
 var cryptKey = "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
 
 func Init[pt any](st stream.Stream, ctx context.Context) (s storeService[pt], err error) {
-	beerMap, err := persistenteventmap.Init[Beer](st, "beer", "0.1.0", func(key string) string {
-		return cryptKey
-	}, func(b Beer) string {
+	beerMap, err := persistenteventmap.Init[Beer](st, "beer", "0.1.0", stream.StaticProvider(sbragi.RedactedString(cryptKey)), func(b Beer) string {
 		return b.ToId()
 	}, ctx)
 	if err != nil {

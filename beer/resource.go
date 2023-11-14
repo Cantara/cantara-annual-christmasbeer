@@ -11,12 +11,11 @@ import (
 	"time"
 
 	log "github.com/cantara/bragi"
+	"github.com/cantara/bragi/sbragi"
 
 	"github.com/cantara/gober/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
-	ws "nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/beer/store"
@@ -56,25 +55,39 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 		service:  s,
 	}
 
-	websocket.Websocket(r.router, r.path, func(c *gin.Context) bool {
+	//(r *gin.RouterGroup, path string, acceptFunc func(c *gin.Context) bool, wsfunc WSHandler[T])
+
+	websocket.Serve[store.Beer](r.router, r.path, func(c *gin.Context) bool {
 		return true
-	}, func(ctx context.Context, conn *ws.Conn, _ gin.Params) bool {
-		conn.CloseRead(ctx)
+	}, func(inn <-chan store.Beer, out chan<- websocket.Write[store.Beer], p gin.Params, ctx context.Context) {
 		stream, err := s.BeerStream(ctx)
 		if err != nil {
 			log.AddError(err).Error("while starting beer stream")
 		}
-		for e := range stream {
-			if e.Data.Brand == "Asahi" {
-				continue
-			}
-			err = wsjson.Write(ctx, conn, e.Data)
-			if err != nil {
-				log.AddError(err).Warning("while writing to socket")
-				return false
+		defer close(out)
+		for {
+			select {
+			case e := <-stream:
+				sbragi.Info("read", "beer", e)
+				errChan := make(chan error, 1)
+				select {
+				case out <- websocket.Write[store.Beer]{
+					Data: e.Data,
+					Err:  errChan,
+				}:
+					select {
+					case err := <-errChan:
+						sbragi.WithError(err).Trace("sent beer event")
+					case <-ctx.Done():
+						return
+					}
+				case <-ctx.Done():
+					return
+				}
+			case <-ctx.Done():
+				return
 			}
 		}
-		return false
 	})
 	r.router.PUT(r.path+"/:beerId", r.registerHandler())
 	return

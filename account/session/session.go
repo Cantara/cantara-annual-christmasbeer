@@ -3,11 +3,14 @@ package session
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/cantara/bragi/sbragi"
 	"github.com/cantara/cantara-annual-christmasbeer/crypto"
 	"github.com/cantara/gober/eventmap"
+	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event/store/inmemory"
 	"github.com/gofrs/uuid"
-	"time"
 
 	log "github.com/cantara/bragi"
 )
@@ -27,9 +30,7 @@ func Init(ctx context.Context) (s sessionService, err error) {
 	if err != nil {
 		return
 	}
-	edSession, err := eventmap.Init[AccessTokenSession](store, "session", "1.0.0", func(key string) string {
-		return cryptKey
-	}, ctx)
+	edSession, err := eventmap.Init[AccessTokenSession](store, "session", "1.0.0", stream.StaticProvider(sbragi.RedactedString(cryptKey)), ctx)
 	if err != nil {
 		return
 	}

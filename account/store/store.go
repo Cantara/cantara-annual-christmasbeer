@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+
+	"github.com/cantara/bragi/sbragi"
 	accountTypes "github.com/cantara/cantara-annual-christmasbeer/account/types"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
@@ -16,17 +18,13 @@ type storeService struct {
 var cryptKey = "2Q82oDggY6CwBs6QHFu3brYjt8JqFILnn68FDN/eTcU="
 
 func Init(store stream.Stream, ctx context.Context) (s storeService, err error) {
-	res, err := persistenteventmap.Init[accountTypes.Account](store, "account", "0.1.0", func(key string) string {
-		return cryptKey
-	}, func(a accountTypes.Account) string {
+	res, err := persistenteventmap.Init[accountTypes.Account](store, "account", "0.1.0", stream.StaticProvider(sbragi.RedactedString(cryptKey)), func(a accountTypes.Account) string {
 		return a.Id.String()
 	}, ctx)
 	if err != nil {
 		return
 	}
-	los, err := persistenteventmap.Init[accountTypes.Login](store, "login", "0.1.0", func(key string) string {
-		return cryptKey
-	}, func(l accountTypes.Login) string {
+	los, err := persistenteventmap.Init[accountTypes.Login](store, "login", "0.1.0", stream.StaticProvider(sbragi.RedactedString(cryptKey)), func(l accountTypes.Login) string {
 		return l.Id
 	}, ctx)
 	if err != nil {

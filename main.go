@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"os"
+	"strconv"
+
 	log "github.com/cantara/bragi"
 	"github.com/cantara/cantara-annual-christmasbeer/account"
 	"github.com/cantara/cantara-annual-christmasbeer/account/privilege"
@@ -11,12 +15,9 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/score"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event/store/eventstore"
-	"github.com/cantara/gober/stream/event/store/inmemory"
+	"github.com/cantara/gober/stream/event/store/ondisk"
 	"github.com/cantara/gober/webserver"
 	"github.com/joho/godotenv"
-	"net/http"
-	"os"
-	"strconv"
 )
 
 func loadEnv() {
@@ -35,13 +36,13 @@ func main() {
 	if err != nil {
 		log.AddError(err).Fatal("while getting webserver port")
 	}
-	serv, err := webserver.Init(uint16(port))
+	serv, err := webserver.Init(uint16(port), false)
 	if err != nil {
 		log.AddError(err).Fatal("while initializing webserver")
 	}
 	log.Println("Initialized webserver")
 
-	api := serv.API
+	api := serv.API()
 	{
 		api.StaticFile("/", "./frontend"+os.Getenv("frontend_path")+"/index.html")
 		api.StaticFile("/global.css", "./frontend"+os.Getenv("frontend_path")+"/global.css")
@@ -78,19 +79,19 @@ func main() {
 		}
 	} else {
 		var err error
-		accountStream, err = inmemory.Init("account", ctx)
+		accountStream, err = ondisk.Init("account", ctx)
 		if err != nil {
 			log.AddError(err).Fatal("while creating account stream")
 		}
-		adminStream, err = inmemory.Init("admin", ctx)
+		adminStream, err = ondisk.Init("admin", ctx)
 		if err != nil {
 			log.AddError(err).Fatal("while creating admin stream")
 		}
-		beerStream, err = inmemory.Init("beer", ctx)
+		beerStream, err = ondisk.Init("beer", ctx)
 		if err != nil {
 			log.AddError(err).Fatal("while creating beer stream")
 		}
-		scoreStream, err = inmemory.Init("score", ctx)
+		scoreStream, err = ondisk.Init("score", ctx)
 		if err != nil {
 			log.AddError(err).Fatal("while creating score stream")
 		}

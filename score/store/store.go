@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
+
+	"github.com/cantara/bragi/sbragi"
 	"github.com/cantara/cantara-annual-christmasbeer/beer/store"
 	"github.com/cantara/gober/persistenteventmap"
 	"github.com/cantara/gober/stream"
@@ -15,12 +17,10 @@ type storeService[pt any] struct {
 	scores persistenteventmap.EventMap[Score]
 }
 
-func CryptoKey(_ string) string {
-	return "a1BNjgicHSQ/YKgG8qhvi9I2MdZXcXQNoef7bnimDLI="
-}
+var cryptoKey = "a1BNjgicHSQ/YKgG8qhvi9I2MdZXcXQNoef7bnimDLI="
 
 func Init[pt any](st stream.Stream, ctx context.Context) (s storeService[pt], err error) {
-	scoreMap, err := persistenteventmap.Init[Score](st, "score", "0.1.0", CryptoKey, func(s Score) string {
+	scoreMap, err := persistenteventmap.Init[Score](st, "score", "0.1.0", stream.StaticProvider(sbragi.RedactedString(cryptoKey)), func(s Score) string {
 		return s.ToId()
 	}, ctx)
 	if err != nil {

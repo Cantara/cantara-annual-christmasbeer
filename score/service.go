@@ -2,6 +2,7 @@ package score
 
 import (
 	"context"
+
 	"github.com/cantara/cantara-annual-christmasbeer/score/store"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event"
@@ -51,7 +52,7 @@ func (s service) Register(b store.Score) (err error) {
 	return s.store.Set(b)
 }
 
-func (s service) BeerStream(ctx context.Context) (out <-chan event.Event[store.Score], err error) {
+func (s service) ScoreStream(ctx context.Context) (out <-chan event.Event[store.Score], err error) {
 	//year := time.Now().Year()
 	//md.Event.Year > year || md.Event.Year < year
 	return s.store.Stream(ctx)

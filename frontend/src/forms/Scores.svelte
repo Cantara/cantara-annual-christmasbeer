@@ -22,7 +22,7 @@
   onMount(() => {
     let prot = 'wss'
 
-    if (location.hostname === "localhost" && location.protocol === "http:") {
+    if (location.protocol === "http:") {
       prot = 'ws'
     }
     socket = new WebSocket(prot + '://'+ location.host + '/score');
