@@ -43,8 +43,8 @@
   {#if (!loggedInn)}
   <div class="item">
     <h4 style="text-align: left;">Cantara holds a beer tasting every year to determine what beers are the best Norwegian christmas beer.</h4>
-    <h4 style="text-align: left;">Time: Lørdag 12.11-2022, kl. 18:00 -></h4>
-    <h4 style="text-align: left;">Place: 17 etg i Rebel, Universitetsgata 2</h4>
+    <h4 style="text-align: left;">Time: Sunday 19.11-2023, kl. 20:00 -></h4>
+    <h4 style="text-align: left;">Place: Rebel, Universitetsgata 2, Kjelleren</h4>
   </div>
   <div class="item">
     <h4 style="text-align: left;">NOTE!!! The physical tasting has completed, but we'll keep the voting open for remote votes until 20.12</h4>
