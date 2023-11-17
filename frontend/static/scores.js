@@ -1,6 +1,6 @@
 const summary = document.getElementById("summary");
 
-var proto = proto || 'wss';
+var prot = prot || 'wss';
 if (location.protocol === "http:") {
     prot = 'ws'
 }

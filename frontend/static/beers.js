@@ -1,6 +1,6 @@
 const beers = document.getElementById("beers");
 
-var proto = proto || 'wss';
+var prot = prot || 'wss';
 if (location.protocol === "http:") {
     prot = 'ws'
 }
