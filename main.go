@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/cantara/bragi"
@@ -204,6 +205,15 @@ func main() {
 	}
 
 	//Adding frontend content
+	// Use this Middleware before serving the static files
+	api.Use(func(c *gin.Context) {
+		// Apply the Cache-Control header to the static files
+		if strings.HasPrefix(c.Request.URL.Path, "/static/") && strings.HasSuffix(c.Request.URL.Path, ".jpg") {
+			c.Header("Cache-Control", "private, max-age=86400")
+		}
+		// Continue to the next middleware or handler
+		c.Next()
+	})
 	{
 		indexF, err := pages.Open("index.html")
 		if err != nil {
