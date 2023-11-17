@@ -57,9 +57,9 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 
 	//(r *gin.RouterGroup, path string, acceptFunc func(c *gin.Context) bool, wsfunc WSHandler[T])
 
-	websocket.Serve[store.Beer](r.router, r.path, func(c *gin.Context) bool {
+	websocket.Serve[string](r.router, r.path, func(c *gin.Context) bool {
 		return true
-	}, func(inn <-chan store.Beer, out chan<- websocket.Write[store.Beer], p gin.Params, ctx context.Context) {
+	}, func(_ <-chan string, out chan<- websocket.Write[string], p gin.Params, ctx context.Context) {
 		stream, err := s.BeerStream(ctx)
 		if err != nil {
 			log.AddError(err).Error("while starting beer stream")
@@ -68,11 +68,10 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 		for {
 			select {
 			case e := <-stream:
-				sbragi.Info("read", "beer", e)
 				errChan := make(chan error, 1)
 				select {
-				case out <- websocket.Write[store.Beer]{
-					Data: e.Data,
+				case out <- websocket.Write[string]{
+					Data: e.Data.ToId(),
 					Err:  errChan,
 				}:
 					select {
@@ -139,12 +138,17 @@ func (v validator[bodyT]) req(f func(c *gin.Context)) func(c *gin.Context) {
 
 func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID)) func(c *gin.Context) {
 	return v.req(func(c *gin.Context) {
-		authHeader := getAuthHeader(c)
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			errorResponse(c, "Bad Request. Missing Bearer in "+AUTHORIZATION+" header", http.StatusUnauthorized)
-			return
+		headers := c.Request.Header[AUTHORIZATION]
+		var tokenString string
+		if len(headers) > 0 {
+			if !strings.HasPrefix(headers[0], "Bearer ") {
+				errorResponse(c, "Bad Request. Missing Bearer in "+AUTHORIZATION+" header", http.StatusUnauthorized)
+				return
+			}
+			tokenString = strings.TrimPrefix(headers[0], "Bearer ")
+		} else {
+			tokenString, _ = c.Cookie("token")
 		}
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		token, accountId, err := v.service.Validate(tokenString)
 		if err != nil {
 			log.Println(err)

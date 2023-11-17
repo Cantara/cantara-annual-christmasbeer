@@ -1,19 +1,24 @@
 package score
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	log "github.com/cantara/bragi"
 	"github.com/cantara/bragi/sbragi"
 	"github.com/cantara/cantara-annual-christmasbeer/account/types"
 
+	"github.com/cantara/gober/stream/event"
 	"github.com/cantara/gober/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -50,6 +55,13 @@ type validator[bodyT any] struct {
 	service accountService
 }
 
+type calculated struct {
+	Beer beerStore.Beer
+	sum  float32
+	Avg  int
+	Num  int
+}
+
 func InitResource(router *gin.RouterGroup, path string, as accountService, bs beerService, s service, ctx context.Context) (r resource, err error) {
 	r = resource{
 		path:     path,
@@ -59,12 +71,99 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, bs be
 		service:  s,
 	}
 
+	scoreStream, err := s.ScoreStream(ctx)
+	if err != nil {
+		log.AddError(err).Error("while starting global score stream")
+	}
+
+	signalChan := make(chan struct{}, 0)
+	var cache string
+	go func(scoreStream <-chan event.Event[store.Score], scores []store.Score) {
+		p := sync.Pool{
+			New: func() any {
+				return []byte{}
+			},
+		}
+		for score := range scoreStream {
+			scores = append(scores, score.Data)
+
+			ant := 5
+			start := len(scores) - ant
+			if start < 0 {
+				start = 0
+			}
+
+			calcs := make(map[string]calculated)
+			for _, score := range scores {
+				c, ok := calcs[score.Beer.ToId()]
+				if !ok {
+					c = calculated{
+						Beer: score.Beer,
+					}
+				}
+				c.Num++
+				c.sum += score.Rating
+				calcs[score.Beer.ToId()] = c
+			}
+
+			if len(calcs) < ant {
+				ant = len(calcs)
+			}
+			high := make([]calculated, ant)
+			most := make([]calculated, ant)
+			for _, v := range calcs {
+				v.Avg = int(v.sum / float32(v.Num))
+				insert(high, func(v1, v2 calculated) bool { return v1.Avg < v2.Avg }, v)
+				insert(most, func(v1, v2 calculated) bool { return v1.Num < v2.Num }, v)
+			}
+			slices.Reverse[[]calculated](high)
+			slices.Reverse[[]calculated](most)
+
+			b := p.Get().([]byte)
+			buf := bytes.NewBuffer(b)
+			sumary(scores[start:], high, most).Render(ctx, buf)
+			cache = buf.String()
+			p.Put(b)
+			close(signalChan)
+			signalChan = make(chan struct{}, 0)
+		}
+	}(scoreStream, make([]store.Score, 0, 1024))
+
+	websocket.Serve[string](r.router, r.path+"/sumary", func(c *gin.Context) bool {
+		return true
+	}, func(_ <-chan string, out chan<- websocket.Write[string], p gin.Params, ctx context.Context) {
+		defer close(out)
+		out <- websocket.Write[string]{Data: cache}
+		for {
+			select {
+			case <-signalChan: //This logic is flawd and will spam!!
+				errChan := make(chan error, 1)
+				select {
+				case out <- websocket.Write[string]{
+					Data: cache,
+					Err:  errChan,
+				}:
+					select {
+					case err := <-errChan:
+						sbragi.WithError(err).Trace("sent sumary")
+					case <-ctx.Done():
+						return
+					}
+					time.Sleep(time.Second) //Adding this to reduce spam frequency
+				case <-ctx.Done():
+					return
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	})
 	websocket.Serve[store.Score](r.router, r.path, func(c *gin.Context) bool {
 		return true
 	}, func(inn <-chan store.Score, out chan<- websocket.Write[store.Score], p gin.Params, ctx context.Context) {
 		stream, err := s.ScoreStream(ctx)
 		if err != nil {
-			log.AddError(err).Error("while starting beer stream")
+			log.AddError(err).Error("while starting session score stream")
 		}
 		defer close(out)
 		for {
@@ -90,7 +189,7 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, bs be
 			}
 		}
 	})
-	r.router.PUT(r.path+"/:scoreYear/:beerId", r.registerHandler())
+	r.router.POST(r.path+"/:scoreYear/:beerId", r.registerHandler())
 	return
 }
 
@@ -172,12 +271,17 @@ func (v validator[bodyT]) req(f func(c *gin.Context)) func(c *gin.Context) {
 
 func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID)) func(c *gin.Context) {
 	return v.req(func(c *gin.Context) {
-		authHeader := getAuthHeader(c)
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			errorResponse(c, "Bad Request. Missing Bearer in "+AUTHORIZATION+" header", http.StatusUnauthorized)
-			return
+		headers := c.Request.Header[AUTHORIZATION]
+		var tokenString string
+		if len(headers) > 0 {
+			if !strings.HasPrefix(headers[0], "Bearer ") {
+				errorResponse(c, "Bad Request. Missing Bearer in "+AUTHORIZATION+" header", http.StatusUnauthorized)
+				return
+			}
+			tokenString = strings.TrimPrefix(headers[0], "Bearer ")
+		} else {
+			tokenString, _ = c.Cookie("token")
 		}
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		token, accountId, err := v.service.Validate(tokenString)
 		if err != nil {
 			log.Println(err)
@@ -241,4 +345,13 @@ func getAuthHeader(c *gin.Context) (header string) {
 		header = headers[0]
 	}
 	return
+}
+
+func insert(arr []calculated, f func(v1, v2 calculated) bool, v calculated) {
+	for i := len(arr) - 1; i >= 0; i-- {
+		if !f(arr[i], v) {
+			continue
+		}
+		v, arr[i] = arr[i], v
+	}
 }

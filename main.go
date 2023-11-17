@@ -2,11 +2,17 @@ package main
 
 import (
 	"context"
+	"embed"
+	"fmt"
+	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	log "github.com/cantara/bragi"
+	"github.com/cantara/bragi/sbragi"
 	"github.com/cantara/cantara-annual-christmasbeer/account"
 	"github.com/cantara/cantara-annual-christmasbeer/account/privilege"
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
@@ -17,6 +23,9 @@ import (
 	"github.com/cantara/gober/stream/event/store/eventstore"
 	"github.com/cantara/gober/stream/event/store/ondisk"
 	"github.com/cantara/gober/webserver"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/joho/godotenv"
 )
 
@@ -27,9 +36,31 @@ func loadEnv() {
 	}
 }
 
+//go:embed frontend/static/*
+var static embed.FS
+
+//go:embed frontend/*.html
+var pages embed.FS
+
 func main() {
 	loadEnv()
 	log.SetLevel(log.INFO)
+	pages, err := fs.Sub(pages, "frontend")
+	if err != nil {
+		sbragi.WithError(err).Fatal("while creating sub of embed fs")
+	}
+	fs.WalkDir(pages, ".", func(path string, d fs.DirEntry, err error) error {
+		log.Info(path)
+		return nil
+	})
+	static, err := fs.Sub(static, "frontend/static")
+	if err != nil {
+		sbragi.WithError(err).Fatal("while creating sub of embed fs")
+	}
+	fs.WalkDir(static, ".", func(path string, d fs.DirEntry, err error) error {
+		log.Info(path)
+		return nil
+	})
 
 	portString := os.Getenv("webserver.port")
 	port, err := strconv.Atoi(portString)
@@ -43,12 +74,14 @@ func main() {
 	log.Println("Initialized webserver")
 
 	api := serv.API()
-	{
-		api.StaticFile("/", "./frontend"+os.Getenv("frontend_path")+"/index.html")
-		api.StaticFile("/global.css", "./frontend"+os.Getenv("frontend_path")+"/global.css")
-		api.StaticFile("/favicon.png", "./frontend"+os.Getenv("frontend_path")+"/favicon.png")
-		api.StaticFS("/build", http.Dir("./frontend"+os.Getenv("frontend_path")+"/build"))
-	}
+	api.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3030"},
+		AllowMethods:     []string{"PUT", "PATCH"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -168,6 +201,45 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+	}
+
+	//Adding frontend content
+	{
+		indexF, err := pages.Open("index.html")
+		if err != nil {
+			sbragi.WithError(err).Fatal("while opeining index")
+		}
+		indexB, err := io.ReadAll(indexF)
+		if err != nil {
+			indexF.Close()
+			sbragi.WithError(err).Fatal("while reading index")
+		}
+		index := string(indexB)
+		indexF.Close()
+		votingF, err := pages.Open("voting.html")
+		if err != nil {
+			sbragi.WithError(err).Fatal("while opeining voting")
+		}
+		votingB, err := io.ReadAll(votingF)
+		if err != nil {
+			indexF.Close()
+			sbragi.WithError(err).Fatal("while reading voting")
+		}
+		voting := string(votingB)
+		votingF.Close()
+		api.GET("/", func(c *gin.Context) {
+			if accResource.Account(c) != uuid.Nil {
+				fmt.Fprint(c.Writer, voting)
+				return
+			}
+			fmt.Fprint(c.Writer, index)
+			c.Writer.WriteHeader(http.StatusOK)
+		})
+		api.StaticFS("/static", http.FS(static))
+		//api.StaticFile("/", "./frontend"+os.Getenv("frontend_path")+"/index.html")
+		//api.StaticFile("/global.css", "./frontend"+os.Getenv("frontend_path")+"/global.css")
+		//api.StaticFile("/favicon.png", "./frontend"+os.Getenv("frontend_path")+"/favicon.png")
+		//api.StaticFS("/build", http.Dir("./frontend"+os.Getenv("frontend_path")+"/build"))
 	}
 
 	serv.Run()

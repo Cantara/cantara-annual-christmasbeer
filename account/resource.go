@@ -4,14 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gofrs/uuid"
 	"io"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
+	"time"
+
+	"github.com/gofrs/uuid"
 
 	log "github.com/cantara/bragi"
+	"github.com/cantara/bragi/sbragi"
 
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/oidc"
@@ -118,6 +121,7 @@ func (res resource) registerHandler() func(c *gin.Context) {
 				http.StatusBadRequest)
 			return
 		}
+		a.Username = strings.ToLower(a.Username)
 
 		token, err := res.service.Register(a)
 		if err != nil {
@@ -125,7 +129,22 @@ func (res resource) registerHandler() func(c *gin.Context) {
 			errorResponse(c, "Error while registring", http.StatusInternalServerError)
 			return
 		}
-		c.JSON(http.StatusOK, token)
+		cookie := http.Cookie{
+			Name:     "token",
+			Value:    token.Token,
+			Expires:  token.Expires,
+			MaxAge:   token.ExpiresIn,
+			SameSite: http.SameSiteStrictMode,
+			Secure:   false,
+			HttpOnly: true,
+			Domain:   "localhost:3030",
+			Path:     "/",
+		}
+		http.SetCookie(c.Writer, &cookie)
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Origin", "localhost:3030")
+		c.Writer.WriteHeader(http.StatusNoContent)
+		//c.JSON(http.StatusOK, token)
 	})
 }
 
@@ -180,15 +199,30 @@ type loginRequest struct {
 func (res resource) loginHandler() func(c *gin.Context) {
 	validate := validator[loginRequest]{service: res.service}
 	return validate.reqWBody(func(c *gin.Context, lr loginRequest) {
+		lr.Username = strings.ToLower(lr.Username)
 		token, err := res.service.Login(lr.Username, lr.Password)
 		if err != nil {
 			log.Println(err)
-			errorResponse(c, "Error while loggin inn: "+err.Error(), http.StatusInternalServerError)
+			errorResponse(c, "Error while loggin inn: "+err.Error(), http.StatusForbidden)
 			return
 		}
 		//w.Header().Set(CONTENT_TYPE, CONTENT_TYPE_JSON)
 		//json.NewEncoder(w).Encode(&token)
-		c.JSON(http.StatusOK, token)
+		cookie := http.Cookie{
+			Name:     "token",
+			Value:    token.Token,
+			Expires:  token.Expires,
+			MaxAge:   token.ExpiresIn,
+			SameSite: http.SameSiteNoneMode,
+			Secure:   false,
+			HttpOnly: true,
+			Domain:   "localhost:3030",
+			Path:     "/",
+		}
+		http.SetCookie(c.Writer, &cookie)
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Origin", "localhost:3030")
+		c.Writer.WriteHeader(http.StatusNoContent)
 	})
 }
 
@@ -245,6 +279,36 @@ func (res resource) adminHandler() func(c *gin.Context) {
 	})
 }
 
+func (res resource) Account(c *gin.Context) (accountId uuid.UUID) {
+	headers := c.Request.Header[AUTHORIZATION]
+	var tokenString string
+	if len(headers) > 0 {
+		if strings.HasPrefix(headers[0], "Bearer ") {
+			tokenString = strings.TrimPrefix(headers[0], "Bearer ")
+		}
+	}
+	if tokenString == "" {
+		tokenString, _ = c.Cookie("token")
+	}
+	if tokenString == "" {
+		return
+	}
+	token, accountId, err := res.service.Validate(tokenString)
+	if err != nil {
+		sbragi.WithError(err).Warning("while validating token")
+		return
+	}
+	if time.Now().Add(time.Hour).After(token.Expires) {
+		token, err = res.service.Renew(tokenString)
+		if err != nil {
+			sbragi.WithError(err).Warning("while renewing validated token")
+			return
+		}
+		c.SetCookie("token", token.Token, token.ExpiresIn, "/", "localhost", true, true)
+	}
+	return
+}
+
 func (v validator[bodyT]) req(f func(c *gin.Context)) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		if c.Request.Header[CONTENT_TYPE][0] != CONTENT_TYPE_JSON {
@@ -257,12 +321,17 @@ func (v validator[bodyT]) req(f func(c *gin.Context)) func(c *gin.Context) {
 
 func (v validator[bodyT]) reqWAuth(f func(c *gin.Context, token session.AccessToken, accountId uuid.UUID)) func(c *gin.Context) {
 	return v.req(func(c *gin.Context) {
-		authHeader := getAuthHeader(c)
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			errorResponse(c, "Bad Request. Missing Bearer in "+AUTHORIZATION+" header", http.StatusUnauthorized)
-			return
+		headers := c.Request.Header[AUTHORIZATION]
+		var tokenString string
+		if len(headers) > 0 {
+			if !strings.HasPrefix(headers[0], "Bearer ") {
+				errorResponse(c, "Bad Request. Missing Bearer in "+AUTHORIZATION+" header", http.StatusUnauthorized)
+				return
+			}
+			tokenString = strings.TrimPrefix(headers[0], "Bearer ")
+		} else {
+			tokenString, _ = c.Cookie("token")
 		}
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		token, accountId, err := v.service.Validate(tokenString)
 		if err != nil {
 			log.Println(err)
@@ -338,10 +407,8 @@ func errorResponse(c *gin.Context, message string, httpStatusCode int) {
 	c.JSON(httpStatusCode, resp)
 }
 
-func getAuthHeader(c *gin.Context) (header string) {
-	headers := c.Request.Header[AUTHORIZATION]
-	if len(headers) > 0 {
-		header = headers[0]
-	}
+/*
+func getToken(c *gin.Context) (header string) {
 	return
 }
+*/

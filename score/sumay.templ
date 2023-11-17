@@ -1,0 +1,33 @@
+package score
+
+import (
+	"github.com/cantara/cantara-annual-christmasbeer/score/store"
+	"strconv"
+)
+
+templ summary(lastScores []store.Score, highestRated []calculated, mostRated []calculated) {
+	<h2>Five newest ratings</h2>
+	if len(lastScores) > 0 {
+		<ol>
+			for _, score := range lastScores {
+				<li>{ score.Beer.Brand } { score.Beer.Name } { strconv.Itoa(score.Beer.BrewYear) }: { strconv.Itoa(int(score.Rating)) } { score.Scorer }<br/> { score.Comment }</li>
+			}
+		</ol>
+	}
+	<h2>Five beers with highest avg rating</h2>
+	if len(highestRated) > 0 {
+		<ol>
+			for _, score := range highestRated {
+				<li>{ score.Beer.Brand } { score.Beer.Name } { strconv.Itoa(score.Beer.BrewYear) }: avg { strconv.Itoa(score.Avg) }</li>
+			}
+		</ol>
+	}
+	<h2>Five most rated beers</h2>
+	if len(mostRated) > 0 {
+		<ol>
+			for _, score := range mostRated {
+				<li>{ score.Beer.Brand } { score.Beer.Name } { strconv.Itoa(score.Beer.BrewYear) }: num { strconv.Itoa(score.Num) }</li>
+			}
+		</ol>
+	}
+}

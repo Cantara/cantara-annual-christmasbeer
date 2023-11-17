@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>CaCBt</title>
+
+  <script defer type="text/javascript" src="static/login.js"></script>
+  <script defer type="text/javascript" src="static/register.js"></script>
+  <script defer type="text/javascript" src="static/scores.js"></script>
+  <link rel="icon" type="image/png" href="static/favicon.png">
+  <link rel="stylesheet" href="static/styles.css">
+
+</head>
+
+<body>
+  <img id="bg" src="static/beer-texture-highress.jpg" />
+  <main>
+    <h1>Cantara`s annual christmas beer tasting</h1>
+    <figure id="place">
+      <figcaption>
+        <h2>When&Where</h2>
+        <p>Cantara holds a beer tasting every year to determine what beers are the best
+          Norwegian christmas beer.</p>
+        <p>Time: Sunday 19.11-2023, kl. 20:00 -></p>
+        <p>Place: Rebel, Universitetsgata 2, Kjelleren</p>
+      </figcaption>
+      <img src="static/rebel-drone.jpg" alt="drone photo of rebel" />
+    </figure>
+    <section id="rules">
+      <h2>Rules</h2>
+      <div>
+        <div id="voting">
+          <h3>Voting</h3>
+          <ul>
+            <li>Minstevolum: 2dl per enhet/stemmeavgivning</li>
+            <li>Ikke smakt pa arets juleøl for selve testen.</li>
+            <li>Terningkast som skala</li>
+            <li>Ike lov å endre tidligere avgitt stemme(r)</li>
+          </ul>
+          <p>Grunnen til disse strenge reglene er at det har vist seg nodvendig à ha litt struktur for å hindre at
+            stemmegivingen blir kaos når selskapet tar av...</p>
+        </div>
+        <div id="newbie">
+          <h3>Newbie</h3>
+          <ul>
+            <li>Forsøk på taktisk stemmegiving gir automatisk nedrykk til failed probie</li>
+            <li>3 påpekninger om userios stemmegiving gir automatisk nedrykk til failed probie</li>
+            <li>Aktiv taktisk lobbyvirksomhet gir automatisk nedrykk til failed probie</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <form id="login-form" action="/" method="post">
+      <h2>Login</h2>
+      <div>
+        <label for="login-username">Username</label>
+        <input type="text" name="username" id="login-username" class="form-field" required placeholder="Username"
+          minlength="3" />
+      </div>
+      <div>
+        <label for="register-username">Password</label>
+        <input type="password" name="password" id="login-password" class="form-field" placeholder="Password">
+      </div>
+      <span id="login-error-msg">Error text</span>
+      <button type="submit" id="login-submit">Login</button>
+    </form>
+    <form id="register-form">
+      <h2>Register</h2>
+      <div>
+        <label for="register-username">Username</label>
+        <input type="text" name="username" id="register-username" class="form-field" required placeholder="Username"
+          minlength="3" />
+      </div>
+      <div>
+        <label for="register-name">Name</label>
+        <input type="text" name="name" id="register-name" class="form-field" required placeholder="Name"
+          minlength="3" />
+      </div>
+      <div>
+        <label for="register-username">Password</label>
+        <input type="password" name="password" id="register-password" class="form-field" placeholder="Password">
+      </div>
+      <span id="register-error-msg">Error text</span>
+      <button type="submit" id="register-submit">Register</button>
+    </form>
+    <section id="summary">
+      <dynamic-summary />
+    </section>
+  </main>
+</body>
+<html>
