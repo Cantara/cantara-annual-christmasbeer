@@ -102,6 +102,9 @@ func (s service) Register(acc AccountRegister) (token session.AccessToken, err e
 	if err != nil {
 		return
 	}
+	s.admin.Register(login.AccountId, Rights{
+		Weight: 1,
+	})
 	return s.session.Create(a.Id)
 }
 
@@ -147,12 +150,12 @@ func (s service) IsAdmin(accountId uuid.UUID) bool {
 	return p.Rights.Admin
 }
 
-func (s service) IsNewbie(accountId uuid.UUID) bool {
+func (s service) Weight(accountId uuid.UUID) float32 {
 	p, err := s.admin.Rights(accountId)
 	if err != nil {
-		return false
+		return 0
 	}
-	return p.Rights.Weight < 1
+	return p.Rights.Weight
 }
 
 func hashPassword(password, salt []byte) ([]byte, error) {

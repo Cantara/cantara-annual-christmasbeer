@@ -238,8 +238,23 @@ func main() {
 		voting := string(votingB)
 		votingF.Close()
 		api.GET("/", func(c *gin.Context) {
-			if accResource.Account(c) != uuid.Nil {
+			if id := accResource.Account(c); id != uuid.Nil {
+				if accService.IsAdmin(id) {
+					accs, _ := accService.Accounts()
+					accsData := make([]accountData, len(accs))
+					for i := range accs {
+						accsData[i] = accountData{
+							id:     accs[i].Id,
+							name:   accs[i].FirstName,
+							weight: accService.Weight(accs[i].Id),
+						}
+					}
+					admin(accsData).Render(c.Request.Context(), c.Writer)
+					c.Writer.WriteHeader(http.StatusOK)
+					return
+				}
 				fmt.Fprint(c.Writer, voting)
+				c.Writer.WriteHeader(http.StatusOK)
 				return
 			}
 			fmt.Fprint(c.Writer, index)

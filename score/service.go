@@ -16,7 +16,7 @@ type Store interface {
 }
 
 type Account interface {
-	IsNewbie(id uuid.UUID) bool
+	Weight(id uuid.UUID) float32
 }
 
 type service struct {
@@ -42,13 +42,9 @@ func (s service) Get(id string) (b store.Score, err error) {
 }
 
 func (s service) Register(b store.Score) (err error) {
-	b.Rating = float32(b.RatingBase)
-	b.Weight = 1
-	b.Newbie = s.account.IsNewbie(b.ScorerId)
-	if b.Newbie {
-		b.Weight = .5
-		b.Rating = b.Rating * b.Weight
-	}
+	b.Weight = s.account.Weight(b.ScorerId)
+	b.Newbie = b.Weight < 1
+	b.Rating = float32(b.RatingBase) * b.Weight
 	return s.store.Set(b)
 }
 

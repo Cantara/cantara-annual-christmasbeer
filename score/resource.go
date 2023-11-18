@@ -121,7 +121,7 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, bs be
 
 			b := p.Get().([]byte)
 			buf := bytes.NewBuffer(b)
-			sumary(scores[start:], high, most).Render(ctx, buf)
+			summary(scores[start:], high, most).Render(ctx, buf)
 			cache = buf.String()
 			p.Put(b)
 			close(signalChan)

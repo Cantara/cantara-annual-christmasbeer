@@ -14,7 +14,7 @@ import (
 	"strconv"
 )
 
-func sumary(lastScores []store.Score, highestRated []calculated, mostRated []calculated) templ.Component {
+func summary(lastScores []store.Score, highestRated []calculated, mostRated []calculated) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {

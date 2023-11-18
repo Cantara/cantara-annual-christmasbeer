@@ -1,5 +1,30 @@
-function myFunction() {
-  alert("selected")
+function myFunction(weight, id) {
+  const body = {
+    weight: parseFloat(weight.value),
+  }
+  fetch('/account/privilege/' +  id, {
+    method: 'PUT',
+    mode: 'cors',
+    cache: 'no-cache',
+    credentials: 'same-origin',
+    body: JSON.stringify(body),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data?.error) {
+      console.log(data.error);
+      //message.error(data.error);
+      return
+    }
+  })
+  .catch((error) => {
+    console.log(error);
+    //message.error(error);
+  });
 }
 
 function search() {

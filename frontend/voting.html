@@ -33,7 +33,7 @@
             <div>
               <label for="score-beer">Beer</label>
               <input type="text" list="beers" name="beer" id="score-beer" class="form-field"
-                placeholder="eXOReaction_Chilly-blond_2023">
+                placeholder="eXOReaction_Chilly-blond_2023" autofocus required>
               <datalist id="beers">
               </datalist>
             </div>
@@ -58,12 +58,13 @@
             <h2>Beer</h2>
             <div>
               <label for="beer-brand">Brand</label>
-              <input type="text" name="brand" id="beer-brand" class="form-field" placeholder="eXOReaction">
+              <input type="text" name="brand" id="beer-brand" class="form-field" placeholder="eXOReaction" autofocus
+                minlength=2 required>
             </div>
             <div>
               <label for="beer-name">Name</label>
               <input type="text" name="name" id="beer-name" class="form-field" required placeholder="Chilly Blond"
-                minlength="2" />
+                minlength="2" required />
             </div>
             <div>
               <label for="beer-year">Brew Year</label>
