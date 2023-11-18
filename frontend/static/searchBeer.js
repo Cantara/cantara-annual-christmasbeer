@@ -1,10 +1,3 @@
-const scoreBeer = document.getElementById("score-beer");
-const scoreDialog = document.getElementById("score-dialog");
-function scoreSearched(id) {
-  scoreBeer.innerText = id;
-  scoreDialo.showModal();
-}
-
 function search() {
   // Declare variables 
   const input = document.getElementById("beerSearch");
