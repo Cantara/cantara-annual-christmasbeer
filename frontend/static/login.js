@@ -25,6 +25,7 @@ loginButton.addEventListener("click", (e) => {
     .then(response => {
         console.log(response)
         if (response.status === 204) {
+            loginForm.reset();
             location.reload();
         } else {
             return response.json()
@@ -32,7 +33,7 @@ loginButton.addEventListener("click", (e) => {
     })
     .then(data => {
         console.log(data);
-        if (data.error) {
+        if (data?.error) {
             loginErrorMsg.innerText = data.error;
             loginErrorMsg.style.opacity = 1;
             return;

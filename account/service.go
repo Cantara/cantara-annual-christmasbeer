@@ -5,10 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"github.com/cantara/cantara-annual-christmasbeer/account/types"
-	"github.com/cantara/cantara-annual-christmasbeer/crypto"
 	"io"
 	"time"
+
+	"github.com/cantara/cantara-annual-christmasbeer/account/types"
+	"github.com/cantara/cantara-annual-christmasbeer/crypto"
 
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/gofrs/uuid"
@@ -151,7 +152,7 @@ func (s service) IsNewbie(accountId uuid.UUID) bool {
 	if err != nil {
 		return false
 	}
-	return p.Rights.Newbie
+	return p.Rights.Weight < 1
 }
 
 func hashPassword(password, salt []byte) ([]byte, error) {

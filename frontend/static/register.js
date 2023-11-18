@@ -24,6 +24,7 @@ registerButton.addEventListener("click", (e) => {
     .then(response => {
         console.log(response)
         if (response.status === 204) {
+            registerForm.reset();
             location.reload();
         } else {
             return response.json()
@@ -31,7 +32,7 @@ registerButton.addEventListener("click", (e) => {
     })
     .then(data => {
         console.log(data);
-        if (data.error) {
+        if (data?.error) {
             registerErrorMsg.innerText = data.error;
             registerErrorMsg.style.opacity = 1;
             return;

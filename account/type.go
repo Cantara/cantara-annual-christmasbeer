@@ -24,6 +24,6 @@ type Crypt struct {
 }
 
 type Rights struct {
-	Newbie bool `json:"newbie"`
-	Admin  bool `json:"admin"`
+	Weight float32 `json:"weight"`
+	Admin  bool    `json:"admin"`
 }

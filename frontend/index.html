@@ -7,6 +7,7 @@
 
   <title>CaCBt</title>
 
+  <script defer type="text/javascript" src="static/dialog.js"></script>
   <script defer type="text/javascript" src="static/login.js"></script>
   <script defer type="text/javascript" src="static/register.js"></script>
   <script defer type="text/javascript" src="static/scores.js"></script>
@@ -17,8 +18,58 @@
 
 <body>
   <img id="bg" src="static/beer-texture-highress.jpg" />
+  <div id="hero">
+    <img src="static/Beer-flight.webp" alt="table of beers">
+    <div>
+      <h1 id="page-title">Cantara`s<br> Annual Christmas Beer Tasting</h1>
+      <p id="grabber">Tradisjonen tro er det på nytt klart for årets juleølsmaking 2023, som i år er den 31. i rekken
+      </p>
+      <div id="hero-action">
+        <dialog id="login-dialog">
+          <button class="x" onclick="closeDialog('login-dialog')">&#x274c</button>
+          <form id="login-form" action="/" method="post">
+            <h2>Login</h2>
+            <div>
+              <label for="login-username">Username</label>
+              <input type="text" name="username" id="login-username" class="form-field" required placeholder="Username"
+                minlength="3" autofocus />
+            </div>
+            <div>
+              <label for="login-username">Password</label>
+              <input type="password" name="password" id="login-password" class="form-field" placeholder="Password">
+            </div>
+            <span id="login-error-msg">Error text</span>
+            <button type="submit" id="login-submit">Login</button>
+          </form>
+        </dialog>
+        <button onclick="showDialog('login-dialog')">Login</button>
+        <dialog id="register-dialog">
+          <button class="x" onclick="closeDialog('register-dialog')">&#x274c</button>
+          <form id="register-form">
+            <h2>Register</h2>
+            <div>
+              <label for="register-username">Username</label>
+              <input type="text" name="username" id="register-username" class="form-field" required
+                placeholder="Username" minlength="3" autofocus />
+            </div>
+            <div>
+              <label for="register-name">Name</label>
+              <input type="text" name="name" id="register-name" class="form-field" required placeholder="Name"
+                minlength="3" />
+            </div>
+            <div>
+              <label for="register-password">Password</label>
+              <input type="password" name="password" id="register-password" class="form-field" placeholder="Password">
+            </div>
+            <span id="register-error-msg">Error text</span>
+            <button type="submit" id="register-submit">Register</button>
+          </form>
+        </dialog>
+        <button onclick="showDialog('register-dialog')">Register</button>
+      </div>
+    </div>
+  </div>
   <main>
-    <h1>Cantara`s annual christmas beer tasting</h1>
     <figure id="place">
       <figcaption>
         <h2>When&Where</h2>
@@ -53,41 +104,10 @@
         </div>
       </div>
     </section>
-    <form id="login-form" action="/" method="post">
-      <h2>Login</h2>
-      <div>
-        <label for="login-username">Username</label>
-        <input type="text" name="username" id="login-username" class="form-field" required placeholder="Username"
-          minlength="3" />
+    <section class="center">
+      <div id="summary">
+        <dynamic-summary />
       </div>
-      <div>
-        <label for="register-username">Password</label>
-        <input type="password" name="password" id="login-password" class="form-field" placeholder="Password">
-      </div>
-      <span id="login-error-msg">Error text</span>
-      <button type="submit" id="login-submit">Login</button>
-    </form>
-    <form id="register-form">
-      <h2>Register</h2>
-      <div>
-        <label for="register-username">Username</label>
-        <input type="text" name="username" id="register-username" class="form-field" required placeholder="Username"
-          minlength="3" />
-      </div>
-      <div>
-        <label for="register-name">Name</label>
-        <input type="text" name="name" id="register-name" class="form-field" required placeholder="Name"
-          minlength="3" />
-      </div>
-      <div>
-        <label for="register-username">Password</label>
-        <input type="password" name="password" id="register-password" class="form-field" placeholder="Password">
-      </div>
-      <span id="register-error-msg">Error text</span>
-      <button type="submit" id="register-submit">Register</button>
-    </form>
-    <section id="summary">
-      <dynamic-summary />
     </section>
   </main>
 </body>

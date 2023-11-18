@@ -7,6 +7,7 @@
 
   <title>Voting</title>
 
+  <script defer type="text/javascript" src="static/dialog.js"></script>
   <script defer type="text/javascript" src="static/beers.js"></script>
   <script defer type="text/javascript" src="static/registerBeer.js"></script>
   <script defer type="text/javascript" src="static/score.js"></script>
@@ -18,55 +19,71 @@
 
 <body>
   <img id="bg" src="static/beer-texture-highress.jpg" />
+  <div id="hero">
+    <img src="static/Beer-flight.webp" alt="table of beers">
+    <div>
+      <h1 id="page-title">Cantara`s<br> Annual Christmas Beer Tasting</h1>
+      <p id="grabber">Tradisjonen tro er det på nytt klart for årets juleølsmaking 2023, som i år er den 31. i rekken
+      </p>
+      <div id="hero-action">
+        <dialog id="score-dialog">
+          <button class="x" onclick="closeDialog('score-dialog')">&#x274c</button>
+          <form id="score-form">
+            <h2>Score</h2>
+            <div>
+              <label for="score-beer">Beer</label>
+              <input type="text" list="beers" name="beer" id="score-beer" class="form-field"
+                placeholder="eXOReaction_Chilly-blond_2023">
+              <datalist id="beers">
+              </datalist>
+            </div>
+            <div>
+              <label for="score-dice">Dice-roll</label>
+              <input type="number" name="rating" id="score-dice" class="form-field" required placeholder=3 min=1 max=6
+                step=1 />
+            </div>
+            <div>
+              <label for="score-comment">Comment</label>
+              <textarea type="text" name="comment" id="score-comment" class="form-field" required
+                placeholder="Myk og fyldig" minlength="2"></textarea>
+            </div>
+            <span id="score-error-msg">Error text</span>
+            <button type="submit" id="score-submit">Score!</button>
+          </form>
+        </dialog>
+        <button onclick="showDialog('score-dialog')">Score!</button>
+        <dialog id="register-beer-dialog">
+          <button class="x" onclick="closeDialog('register-beer-dialog')">&#x274c</button>
+          <form id="beer-form">
+            <h2>Beer</h2>
+            <div>
+              <label for="beer-brand">Brand</label>
+              <input type="text" name="brand" id="beer-brand" class="form-field" placeholder="eXOReaction">
+            </div>
+            <div>
+              <label for="beer-name">Name</label>
+              <input type="text" name="name" id="beer-name" class="form-field" required placeholder="Chilly Blond"
+                minlength="2" />
+            </div>
+            <div>
+              <label for="beer-year">Brew Year</label>
+              <input type="number" name="year" id="beer-year" class="form-field" required placeholder=2023 min=1980
+                max=2023 />
+            </div>
+            <div>
+              <label for="beer-abv">ABV%</label>
+              <input type="number" name="abv" id="beer-abv" class="form-field" required placeholder=5.6 min=0 max=98
+                step=0.1 />
+            </div>
+            <span id="beer-error-msg">Error text</span>
+            <button type="submit" id="beer-submit">Register</button>
+          </form>
+        </dialog>
+        <button onclick="showDialog('register-beer-dialog')">Register beer</button>
+      </div>
+    </div>
+  </div>
   <main>
-    <h1>Cantara`s annual christmas beer tasting</h1>
-        <form id="score-form">
-      <h2>Score</h2>
-      <div>
-        <label for="score-beer">Beer</label>
-        <input type="text" list="beers" name="beer" id="score-beer" class="form-field"
-          placeholder="eXOReaction_Chilly-blond_2023">
-        <datalist id="beers">
-        </datalist>
-      </div>
-      <div>
-        <label for="score-dice">Dice-roll</label>
-        <input type="number" name="rating" id="score-dice" class="form-field" required placeholder=3 min=1 max=6
-          step=1 />
-      </div>
-      <div>
-        <label for="score-comment">Comment</label>
-        <textarea type="text" name="comment" id="score-comment" class="form-field" required placeholder="Myk og fyldig"
-          minlength="2"></textarea>
-      </div>
-      <span id="score-error-msg">Error text</span>
-      <button type="submit" id="score-submit">Score!</button>
-    </form>
-
-    <form id="beer-form">
-      <h2>Beer</h2>
-      <div>
-        <label for="beer-brand">Brand</label>
-        <input type="text" name="brand" id="beer-brand" class="form-field" placeholder="eXOReaction">
-      </div>
-      <div>
-        <label for="beer-name">Name</label>
-        <input type="text" name="name" id="beer-name" class="form-field" required placeholder="Chilly Blond"
-          minlength="2" />
-      </div>
-      <div>
-        <label for="beer-year">Brew Year</label>
-        <input type="number" name="year" id="beer-year" class="form-field" required placeholder=2023 min=1980
-          max=2023 />
-      </div>
-      <div>
-        <label for="beer-abv">ABV%</label>
-        <input type="number" name="abv" id="beer-abv" class="form-field" required placeholder=5.6 min=0 max=98
-          step=0.1 />
-      </div>
-      <span id="beer-error-msg">Error text</span>
-      <button type="submit" id="beer-submit">Register</button>
-    </form>
     <section id="summary">
       <dynamic-summary />
     </section>

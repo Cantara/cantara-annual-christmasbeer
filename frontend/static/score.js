@@ -22,13 +22,14 @@ scoreButton.addEventListener("click", (e) => {
     })
     .then(response => {
         console.log(response)
-        if (response.status !== 204) {
+        if (response.status !== 200) {
             return response.json()
         }
+        scoreForm.reset();
     })
     .then(data => {
         console.log(data);
-        if (data.error) {
+        if (data?.error) {
             scoreErrorMsg.innerText = data.error;
             scoreErrorMsg.style.opacity = 1;
             return;
