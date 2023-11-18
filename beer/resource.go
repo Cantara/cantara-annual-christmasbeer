@@ -47,6 +47,14 @@ func prov(key string) string {
 	return "MdgKIHmlbRszXjLbS7pXnSBdvl+SR1bSejtpFTQXxro="
 }
 
+type Beer struct {
+	Id       string  `json:"id"`
+	Name     string  `json:"name"`
+	Brand    string  `json:"brand"`
+	BrewYear int     `json:"brew_year"`
+	ABV      float32 `json:"abv"`
+}
+
 func InitResource(router *gin.RouterGroup, path string, as accountService, s service, ctx context.Context) (r resource, err error) {
 	r = resource{
 		path:     path,
@@ -57,9 +65,9 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 
 	//(r *gin.RouterGroup, path string, acceptFunc func(c *gin.Context) bool, wsfunc WSHandler[T])
 
-	websocket.Serve[string](r.router, r.path, func(c *gin.Context) bool {
+	websocket.Serve[Beer](r.router, r.path, func(c *gin.Context) bool {
 		return true
-	}, func(_ <-chan string, out chan<- websocket.Write[string], p gin.Params, ctx context.Context) {
+	}, func(_ <-chan Beer, out chan<- websocket.Write[Beer], p gin.Params, ctx context.Context) {
 		stream, err := s.BeerStream(ctx)
 		if err != nil {
 			log.AddError(err).Error("while starting beer stream")
@@ -70,9 +78,15 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 			case e := <-stream:
 				errChan := make(chan error, 1)
 				select {
-				case out <- websocket.Write[string]{
-					Data: e.Data.ToId(),
-					Err:  errChan,
+				case out <- websocket.Write[Beer]{
+					Data: Beer{
+						Id:       e.Data.ToId(),
+						Brand:    e.Data.Brand,
+						Name:     e.Data.Name,
+						BrewYear: e.Data.BrewYear,
+						ABV:      e.Data.ABV,
+					},
+					Err: errChan,
 				}:
 					select {
 					case err := <-errChan:

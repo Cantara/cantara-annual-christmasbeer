@@ -9,6 +9,7 @@
 
   <script defer type="text/javascript" src="static/dialog.js"></script>
   <script defer type="text/javascript" src="static/beers.js"></script>
+  <script defer type="text/javascript" src="static/searchBeer.js"></script>
   <script defer type="text/javascript" src="static/registerBeer.js"></script>
   <script defer type="text/javascript" src="static/score.js"></script>
   <script defer type="text/javascript" src="static/scores.js"></script>
@@ -85,6 +86,17 @@
     </div>
   </div>
   <main>
+    <section>
+      <input type="text" id="beerSearch" onkeyup="search()" placeholder="Search for names..">
+      <table id="beerTable">
+        <tr class="header">
+          <th style="width:30%;">Brand</th>
+          <th style="width:40%;">Name</th>
+          <th style="width:15%;">Year</th>
+          <th style="width:15%;">ABV%</th>
+        </tr>
+      </table>
+    </section>
     <section id="summary">
       <dynamic-summary />
     </section>

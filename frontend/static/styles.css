@@ -362,7 +362,7 @@ form > span {
 	padding-left: .5em;
 }
 
-#myInput {
+#myInput, #beerSearch {
 	margin-top: 1em;
 	background-image: url('searchicon.png'); /* Add a search icon to input */
 	background-position: 10px 12px; /* Position the search icon */
@@ -373,24 +373,24 @@ form > span {
 	border: 1px solid #ddd; /* Add a grey border */
 }
 
-#myTable {
+table {
 	border-collapse: collapse; /* Collapse borders */
 	width: 100%; /* Full-width */
 	border: 1px solid #ddd; /* Add a grey border */
 	font-size: 18px; /* Increase font-size */
 }
 
-#myTable th, #myTable td {
+table th, table td {
 	text-align: left; /* Left-align text */
 	padding: 12px; /* Add padding */
 }
 
-#myTable tr {
+table tr {
 	/* Add a bottom border to all table rows */
 	border-bottom: 1px solid #ddd; 
 }
 
-#myTable tr.header, #myTable tr:hover {
+table tr.header, table tr:hover {
 	/* Add a grey background color to the table header and on hover */
 	background-color: #f1f1f1;
 }
