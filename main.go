@@ -244,13 +244,21 @@ func main() {
 		api.GET("/", func(c *gin.Context) {
 			if id := accResource.Account(c); id != uuid.Nil {
 				if accService.IsAdmin(id) {
+					ratings := make(map[string]int)
+					scoreService.Range(func(_ string, score scoreStore.Score) error {
+						id := score.ScorerId.String()
+						ratings[id] = ratings[id] + 1
+						return nil
+					})
+					sbragi.Info("admin", "ratings", ratings)
 					accs, _ := accService.Accounts()
 					accsData := make([]accountData, len(accs))
 					for i := range accs {
 						accsData[i] = accountData{
-							id:     accs[i].Id,
-							name:   accs[i].FirstName,
-							weight: accService.Weight(accs[i].Id),
+							id:      accs[i].Id,
+							name:    accs[i].FirstName,
+							ratings: ratings[accs[i].Id.String()],
+							weight:  accService.Weight(accs[i].Id),
 						}
 					}
 					admin(accsData).Render(c.Request.Context(), c.Writer)
