@@ -102,6 +102,8 @@ main {
 	display: flex;
 	flex-direction: column;
 	gap: 2em;
+
+	display: none; /* hiding unused elements */
 }
 
 #downloadables > button {
