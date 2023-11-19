@@ -13,6 +13,7 @@ type Store interface {
 	Set(b store.Score) (err error)
 	Get(id string) (b store.Score, err error)
 	Stream(ctx context.Context) (out <-chan event.Event[store.Score], err error)
+	Range(f func(key string, data store.Score) error)
 }
 
 type Account interface {
@@ -39,6 +40,10 @@ func InitService(st stream.Stream, a Account, ctx context.Context) (s service, e
 func (s service) Get(id string) (b store.Score, err error) {
 	b, err = s.store.Get(id)
 	return
+}
+
+func (s service) Range(f func(key string, data store.Score) error) {
+	s.store.Range(f)
 }
 
 func (s service) Register(b store.Score) (err error) {

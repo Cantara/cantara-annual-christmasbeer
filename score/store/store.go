@@ -45,6 +45,10 @@ func (s storeService[pt]) Get(id string) (b Score, err error) {
 	return
 }
 
+func (s storeService[pt]) Range(f func(key string, data Score) error) {
+	s.scores.Range(f)
+}
+
 func (s storeService[pt]) Stream(ctx context.Context) (out <-chan event.Event[Score], err error) {
 	return s.scores.Stream(event.AllTypes(), eventStore.STREAM_START, stream.ReadDataType("score"), ctx)
 }

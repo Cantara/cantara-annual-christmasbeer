@@ -61,6 +61,10 @@ func (s storeService) Accounts() (accounts []accountTypes.Account, err error) {
 	return
 }
 
+func (s storeService) Range(f func(key string, data accountTypes.Account) error) {
+	s.users.Range(f)
+}
+
 func (s storeService) GetById(id uuid.UUID) (user accountTypes.Account, err error) {
 	return s.getUser(id)
 }

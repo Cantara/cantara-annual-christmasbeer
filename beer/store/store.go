@@ -42,6 +42,11 @@ func (s storeService[pt]) Get(id string) (b Beer, err error) {
 	b, err = s.beers.Get(id)
 	return
 }
+
+func (s storeService[pt]) Range(f func(key string, data Beer) error) {
+	s.beers.Range(f)
+}
+
 func (s storeService[pt]) Stream(ctx context.Context) (out <-chan event.Event[Beer], err error) {
 	return s.beers.Stream(event.AllTypes(), store.STREAM_START, stream.ReadDataType("beer"), ctx)
 }

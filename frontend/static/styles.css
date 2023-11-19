@@ -95,6 +95,23 @@ main {
         background-color: #ddc9b4;
 }
 
+#downloadables {
+	position: absolute;
+	right: 8em;
+	top: 24em;
+	display: flex;
+	flex-direction: column;
+	gap: 2em;
+}
+
+#downloadables > button {
+	font-size: max(2vw, 1rem);
+        border-radius: .5em;
+        width: 8em;
+        color: #a54d07;
+        background-color: #ddc9b4;
+}
+
 @media screen and (max-width: 440px) {
         #page-title{
                 margin-top: .5em;

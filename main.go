@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -18,8 +19,11 @@ import (
 	"github.com/cantara/cantara-annual-christmasbeer/account/privilege"
 	"github.com/cantara/cantara-annual-christmasbeer/account/session"
 	"github.com/cantara/cantara-annual-christmasbeer/account/store"
+	"github.com/cantara/cantara-annual-christmasbeer/account/types"
 	"github.com/cantara/cantara-annual-christmasbeer/beer"
+	beerStore "github.com/cantara/cantara-annual-christmasbeer/beer/store"
 	"github.com/cantara/cantara-annual-christmasbeer/score"
+	scoreStore "github.com/cantara/cantara-annual-christmasbeer/score/store"
 	"github.com/cantara/gober/stream"
 	"github.com/cantara/gober/stream/event/store/eventstore"
 	"github.com/cantara/gober/stream/event/store/ondisk"
@@ -261,6 +265,37 @@ func main() {
 			c.Writer.WriteHeader(http.StatusOK)
 		})
 		api.StaticFS("/static", http.FS(static))
+		api.GET("/scores.csv", func(c *gin.Context) {
+			fmt.Fprint(c.Writer, ",")
+			beerService.Range(func(key string, beer beerStore.Beer) error {
+				_, err := fmt.Fprintf(c.Writer, "%s,", beer.Name)
+				return err
+			})
+			fmt.Fprintln(c.Writer)
+			accStore.Range(func(id string, acc types.Account) error {
+				if acc.FirstName == "" {
+					return nil
+				}
+				fmt.Fprintf(c.Writer, "%s,", acc.FirstName)
+				beerService.Range(func(_ string, beer beerStore.Beer) error {
+					scoreService.Range(func(_ string, score scoreStore.Score) error {
+						if beer.Name != score.Beer.Name {
+							return nil
+						}
+						if score.ScorerId.String() == id {
+							fmt.Fprintf(c.Writer, "%d", int(score.Rating))
+							return errors.New("dummy error to break loop")
+						} else {
+							return nil
+						}
+					})
+					fmt.Fprint(c.Writer, ",")
+					return nil
+				})
+				fmt.Fprintln(c.Writer)
+				return nil
+			})
+		})
 		//api.StaticFile("/", "./frontend"+os.Getenv("frontend_path")+"/index.html")
 		//api.StaticFile("/global.css", "./frontend"+os.Getenv("frontend_path")+"/global.css")
 		//api.StaticFile("/favicon.png", "./frontend"+os.Getenv("frontend_path")+"/favicon.png")
