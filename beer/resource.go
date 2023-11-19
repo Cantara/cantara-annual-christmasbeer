@@ -117,6 +117,12 @@ func (res resource) registerHandler() func(c *gin.Context) {
 			return
 		}
 
+		if beerId != a.ToId() {
+			errorResponse(c,
+				"Bad Request "+fmt.Sprintf("provided id does not match calculated id"),
+				http.StatusBadRequest)
+			return
+		}
 		if 1980 > a.BrewYear || a.BrewYear > time.Now().Year() {
 			errorResponse(c,
 				"Bad Request "+fmt.Sprintf("brew year must be within the past 40ish years"),
@@ -126,6 +132,18 @@ func (res resource) registerHandler() func(c *gin.Context) {
 		if 0 > a.ABV || a.ABV > 98 {
 			errorResponse(c,
 				"Bad Request "+fmt.Sprintf("abv must be within a valid alcohol percentage range"),
+				http.StatusBadRequest)
+			return
+		}
+		if len(strings.TrimSpace(a.Brand)) < 2 {
+			errorResponse(c,
+				"Bad Request "+fmt.Sprintf("brand needs to contain more than one letter"),
+				http.StatusBadRequest)
+			return
+		}
+		if len(strings.TrimSpace(a.Name)) < 2 {
+			errorResponse(c,
+				"Bad Request "+fmt.Sprintf("name needs to contain more than one letter"),
 				http.StatusBadRequest)
 			return
 		}
