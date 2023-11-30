@@ -9,8 +9,8 @@ templ summary(lastScores []store.Score, highestRated []calculated, mostRated []c
 	<h2>Five newest ratings</h2>
 	if len(lastScores) > 0 {
 		<ol>
-			for _, score := range lastScores {
-				<li>{ score.Beer.Brand } { score.Beer.Name } { strconv.Itoa(score.Beer.BrewYear) }: { strconv.Itoa(int(score.Rating)) } { score.Scorer }<br/> { score.Comment }</li>
+			for i := len(lastScores)-1; i >= 0;  i-- {
+				<li>{ lastScores[i].Beer.Brand } { lastScores[i].Beer.Name } { strconv.Itoa(lastScores[i].Beer.BrewYear) }: { strconv.Itoa(int(lastScores[i].Rating)) } { lastScores[i].Scorer }<br/> { lastScores[i].Comment }</li>
 			}
 		</ol>
 	}

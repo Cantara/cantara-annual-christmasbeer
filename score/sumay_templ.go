@@ -45,12 +45,12 @@ func summary(lastScores []store.Score, highestRated []calculated, mostRated []ca
 			if err != nil {
 				return err
 			}
-			for _, score := range lastScores {
+			for i := len(lastScores) - 1; i >= 0; i-- {
 				_, err = templBuffer.WriteString("<li>")
 				if err != nil {
 					return err
 				}
-				var var_3 string = score.Beer.Brand
+				var var_3 string = lastScores[i].Beer.Brand
 				_, err = templBuffer.WriteString(templ.EscapeString(var_3))
 				if err != nil {
 					return err
@@ -59,7 +59,7 @@ func summary(lastScores []store.Score, highestRated []calculated, mostRated []ca
 				if err != nil {
 					return err
 				}
-				var var_4 string = score.Beer.Name
+				var var_4 string = lastScores[i].Beer.Name
 				_, err = templBuffer.WriteString(templ.EscapeString(var_4))
 				if err != nil {
 					return err
@@ -68,7 +68,7 @@ func summary(lastScores []store.Score, highestRated []calculated, mostRated []ca
 				if err != nil {
 					return err
 				}
-				var var_5 string = strconv.Itoa(score.Beer.BrewYear)
+				var var_5 string = strconv.Itoa(lastScores[i].Beer.BrewYear)
 				_, err = templBuffer.WriteString(templ.EscapeString(var_5))
 				if err != nil {
 					return err
@@ -78,7 +78,7 @@ func summary(lastScores []store.Score, highestRated []calculated, mostRated []ca
 				if err != nil {
 					return err
 				}
-				var var_7 string = strconv.Itoa(int(score.Rating))
+				var var_7 string = strconv.Itoa(int(lastScores[i].Rating))
 				_, err = templBuffer.WriteString(templ.EscapeString(var_7))
 				if err != nil {
 					return err
@@ -87,7 +87,7 @@ func summary(lastScores []store.Score, highestRated []calculated, mostRated []ca
 				if err != nil {
 					return err
 				}
-				var var_8 string = score.Scorer
+				var var_8 string = lastScores[i].Scorer
 				_, err = templBuffer.WriteString(templ.EscapeString(var_8))
 				if err != nil {
 					return err
@@ -96,7 +96,7 @@ func summary(lastScores []store.Score, highestRated []calculated, mostRated []ca
 				if err != nil {
 					return err
 				}
-				var var_9 string = score.Comment
+				var var_9 string = lastScores[i].Comment
 				_, err = templBuffer.WriteString(templ.EscapeString(var_9))
 				if err != nil {
 					return err
