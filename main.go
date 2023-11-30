@@ -276,6 +276,9 @@ func main() {
 		api.GET("/scores.csv", func(c *gin.Context) {
 			fmt.Fprint(c.Writer, ",")
 			beerService.Range(func(key string, beer beerStore.Beer) error {
+				if beer.Name == "" || beer.Brand == "" {
+					return nil
+				}
 				_, err := fmt.Fprintf(c.Writer, "%s,", beer.Name)
 				return err
 			})
