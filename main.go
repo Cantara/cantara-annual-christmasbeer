@@ -286,6 +286,9 @@ func main() {
 				}
 				fmt.Fprintf(c.Writer, "%s,", acc.FirstName)
 				beerService.Range(func(_ string, beer beerStore.Beer) error {
+					if beer.Name == "" || beer.Brand == "" {
+						return nil
+					}
 					scoreService.Range(func(_ string, score scoreStore.Score) error {
 						if beer.Name != score.Beer.Name {
 							return nil

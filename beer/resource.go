@@ -76,6 +76,9 @@ func InitResource(router *gin.RouterGroup, path string, as accountService, s ser
 		for {
 			select {
 			case e := <-stream:
+				if e.Data.Name == "" || e.Data.Brand == "" {
+					continue
+				}
 				errChan := make(chan error, 1)
 				select {
 				case out <- websocket.Write[Beer]{
