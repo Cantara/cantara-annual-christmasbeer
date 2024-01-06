@@ -6,7 +6,7 @@ toolchain go1.21.1
 
 require (
 	github.com/a-h/templ v0.2.513
-	github.com/cantara/bragi v0.7.4
+	github.com/cantara/bragi v0.8.0
 	github.com/cantara/gober v0.18.7
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-contrib/cors v1.5.0
