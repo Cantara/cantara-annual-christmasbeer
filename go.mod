@@ -13,7 +13,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joho/godotenv v1.5.1
-	github.com/lestrrat-go/jwx v1.2.29
+	github.com/lestrrat-go/jwx/v2 v2.1.1
 	golang.org/x/crypto v0.26.0
 )
 
