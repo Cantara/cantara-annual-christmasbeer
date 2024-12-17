@@ -14,6 +14,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx v1.2.30
+	github.com/lestrrat-go/jwx/v2 v2.1.3
 	golang.org/x/crypto v0.31.0
 )
 
