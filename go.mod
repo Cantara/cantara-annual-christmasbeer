@@ -14,7 +14,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx v1.2.30
-	golang.org/x/crypto v0.32.0
+	golang.org/x/crypto v0.33.0
 )
 
 require (
@@ -61,8 +61,8 @@ require (
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	google.golang.org/genproto v0.0.0-20200815001618-f69a88009b70 // indirect
 	google.golang.org/grpc v1.35.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
