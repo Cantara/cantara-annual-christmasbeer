@@ -2,7 +2,7 @@ module github.com/cantara/cantara-annual-christmasbeer
 
 go 1.23
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	github.com/a-h/templ v0.3.833
