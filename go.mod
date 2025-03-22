@@ -2,14 +2,14 @@ module github.com/cantara/cantara-annual-christmasbeer
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	github.com/a-h/templ v0.3.850
 	github.com/cantara/bragi v0.8.0
 	github.com/cantara/gober v0.18.8
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
-	github.com/gin-contrib/cors v1.7.3
+	github.com/gin-contrib/cors v1.7.4
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joho/godotenv v1.5.1
