@@ -13,7 +13,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joho/godotenv v1.5.1
-	github.com/lestrrat-go/jwx v1.2.30
+	github.com/lestrrat-go/jwx v1.2.31
 	golang.org/x/crypto v0.37.0
 )
 
@@ -27,7 +27,7 @@ require (
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
