@@ -1,6 +1,6 @@
 module github.com/cantara/cantara-annual-christmasbeer
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.25.1
 
@@ -14,7 +14,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx v1.2.31
-	golang.org/x/crypto v0.41.0
+	golang.org/x/crypto v0.42.0
 )
 
 require (
@@ -60,9 +60,9 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
-	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	google.golang.org/genproto v0.0.0-20200815001618-f69a88009b70 // indirect
 	google.golang.org/grpc v1.35.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
