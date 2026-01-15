@@ -14,6 +14,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx v1.2.31
+	github.com/lestrrat-go/jwx/v3 v3.0.13
 	golang.org/x/crypto v0.47.0
 )
 
@@ -46,7 +47,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
-	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.4 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
