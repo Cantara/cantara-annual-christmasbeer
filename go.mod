@@ -1,6 +1,6 @@
 module github.com/cantara/cantara-annual-christmasbeer
 
-go 1.24.0
+go 1.25
 
 toolchain go1.25.6
 
@@ -11,7 +11,8 @@ require (
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
-	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/gofrs/uuid v4.3.1+incompatible
+	github.com/gofrs/uuid/v5 v5.5.1
 	github.com/joho/godotenv v1.5.1
 	github.com/lestrrat-go/jwx v1.2.31
 	golang.org/x/crypto v0.47.0
